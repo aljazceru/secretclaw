@@ -84,6 +84,8 @@ export type MediaUnderstandingConfig = {
   timeoutSeconds?: number;
   /** Default language hint (audio). */
   language?: string;
+  /** Prefer local CLI tools over API providers (default: true for audio). */
+  preferLocal?: boolean;
   /** Optional provider-specific query params (merged into requests). */
   providerOptions?: Record<string, Record<string, string | number | boolean>>;
   /** @deprecated Use providerOptions.deepgram instead. */

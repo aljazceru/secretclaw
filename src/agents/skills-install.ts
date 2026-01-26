@@ -6,6 +6,11 @@ import { pipeline } from "node:stream/promises";
 
 import type { ClawdbotConfig } from "../config/config.js";
 import { resolveBrewExecutable } from "../infra/brew.js";
+import {
+  detectPackageManager,
+  resolvePackageName,
+  buildInstallCommand as buildPkgInstallCommand,
+} from "../infra/pkg.js";
 import { runCommandWithTimeout } from "../process/exec.js";
 import { CONFIG_DIR, ensureDir, resolveUserPath } from "../utils.js";
 import {
@@ -102,8 +107,43 @@ function buildInstallCommand(
   error?: string;
 } {
   switch (spec.kind) {
+    case "system": {
+      if (!spec.package && !spec.formula) {
+        return { argv: null, error: "missing package name" };
+      }
+
+      const pkgManager = detectPackageManager();
+      if (!pkgManager) {
+        return { argv: null, error: "no system package manager found" };
+      }
+
+      const packageName = spec.package ?? spec.formula!;
+      const mappedName = resolvePackageName(packageName, pkgManager);
+
+      if (!mappedName) {
+        return {
+          argv: null,
+          error: `package ${packageName} not available for ${pkgManager}`,
+        };
+      }
+
+      const command = buildPkgInstallCommand(mappedName, pkgManager);
+      return { argv: ["sh", "-c", command] };
+    }
     case "brew": {
       if (!spec.formula) return { argv: null, error: "missing brew formula" };
+
+      if (prefs.preferSystem) {
+        const pkgManager = detectPackageManager();
+        if (pkgManager) {
+          const mappedName = resolvePackageName(spec.formula, pkgManager);
+          if (mappedName) {
+            const command = buildPkgInstallCommand(mappedName, pkgManager);
+            return { argv: ["sh", "-c", command] };
+          }
+        }
+      }
+
       return { argv: ["brew", "install", spec.formula] };
     }
     case "node": {

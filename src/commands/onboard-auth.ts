@@ -3,6 +3,7 @@ export {
   SYNTHETIC_DEFAULT_MODEL_REF,
 } from "../agents/synthetic-models.js";
 export { VENICE_DEFAULT_MODEL_ID, VENICE_DEFAULT_MODEL_REF } from "../agents/venice-models.js";
+export { REDPILL_DEFAULT_MODEL_REF } from "../agents/models-config.providers.redpill.js";
 export {
   applyAuthProfileConfig,
   applyKimiCodeConfig,
@@ -32,6 +33,11 @@ export {
   applyOpencodeZenConfig,
   applyOpencodeZenProviderConfig,
 } from "./onboard-auth.config-opencode.js";
+export {
+  applyRedpillConfig,
+  applyRedpillProviderConfig,
+  setRedpillApiKey,
+} from "./onboard-auth.redpill.js";
 export {
   OPENROUTER_DEFAULT_MODEL_REF,
   setAnthropicApiKey,

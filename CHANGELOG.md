@@ -4,8 +4,25 @@ Docs: https://docs.clawd.bot
 
 ## 2026.1.25
 
+### Highlights
+- Privacy: RedPill.ai TEE confidential inference provider with cryptographic attestation. (#ISSUE) https://docs.clawd.bot/providers/redpill
+- Privacy: Qwen3-TTS self-hosted text-to-speech replaces ElevenLabs as default provider. (#ISSUE) https://docs.clawd.bot/tts
+- Privacy: Local Whisper prioritization for speech-to-text (no cloud by default). (#ISSUE) https://docs.clawd.bot/nodes/audio
+- Infrastructure: System package manager support (apt/dnf) replaces Homebrew on Linux. (#ISSUE) https://docs.clawd.bot/tools/skills
+
 ### Changes
-- TBD.
+- **Providers**: add RedPill.ai TEE confidential inference with 19 models including 9 TEE-protected (phala/*) models. OpenAI-compatible API at https://api.redpill.ai/v1 with cryptographic attestation support. Default model: phala/deepseek-chat-v3-0324 for privacy-preserving AI. (#ISSUE)
+- **TTS**: add Qwen3-TTS provider with self-hosted Gradio API support, 9 premium voices (Vivian, Serena, Dylan, etc.), and 11 languages. Apache 2.0 licensed. Now default TTS provider (qwen3 → elevenlabs → openai → edge). Requires local Qwen3-TTS server (pip install qwen-tts). (#ISSUE)
+- **Audio**: prioritize local Whisper CLI tools (whisper-cpp, whisper, sherpa-onnx) over API providers by default. Add tools.media.audio.preferLocal config (default: true) for privacy-first transcription. (#ISSUE)
+- **Skills**: add system package manager support (apt, dnf, yum, pacman, apk) with automatic detection and package name mapping for 40+ common packages. Add kind: "system" install type and skills.install.preferSystem config (default: true). (#ISSUE)
+- **Skills**: migrate 7 skills to system package managers (1password, video-frames, openai-image-gen, himalaya, nano-banana-pro, openai-whisper, gemini). Maintain backward compatibility with Homebrew via INSTALL_BREW=1. (#ISSUE)
+- **Docker**: disable Linuxbrew in sandbox images by default, using native Debian packages instead. Add 8 common packages (python3-pip, ffmpeg, ripgrep, fd-find, bat, htop, sqlite3, vim). Reduces image size ~500MB-1GB. (#ISSUE)
+- **Infrastructure**: add package manager detection, resolution, and command building (src/infra/pkg.ts) supporting apt, dnf, yum, pacman, and apk with comprehensive package mappings. (#ISSUE)
+- **Tests**: add comprehensive test suites for all new features (114 total new tests): pkg.test.ts (33), models-config.providers.redpill.test.ts (27), auth-choice.apply.redpill.test.ts (14), tts.qwen3.test.ts (26), runner.local-priority.test.ts (12), skills-install.pkg.test.ts (13). (#ISSUE)
+
+### Fixes
+- TTS: fix Qwen3-TTS Gradio API integration with proper server-sent event parsing and WAV buffer creation. (#ISSUE)
+- Skills: fix package manager async detection in buildInstallCommand with proper error handling. (#ISSUE)
 
 ## 2026.1.24-3
 

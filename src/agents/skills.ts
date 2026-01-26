@@ -35,11 +35,12 @@ export {
 export function resolveSkillsInstallPreferences(config?: ClawdbotConfig) {
   const raw = config?.skills?.install;
   const preferBrew = raw?.preferBrew ?? true;
+  const preferSystem = raw?.preferSystem ?? true;
   const managerRaw = typeof raw?.nodeManager === "string" ? raw.nodeManager.trim() : "";
   const manager = managerRaw.toLowerCase();
   const nodeManager =
     manager === "pnpm" || manager === "yarn" || manager === "bun" || manager === "npm"
       ? (manager as "npm" | "pnpm" | "yarn" | "bun")
       : "npm";
-  return { preferBrew, nodeManager };
+  return { preferBrew, nodeManager, preferSystem };
 }

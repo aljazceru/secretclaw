@@ -22,6 +22,7 @@ export type AuthChoiceGroupId =
   | "minimax"
   | "synthetic"
   | "venice"
+  | "redpill"
   | "qwen";
 
 export type AuthChoiceGroup = {
@@ -72,6 +73,12 @@ const AUTH_CHOICE_GROUP_DEFS: {
     label: "Venice AI",
     hint: "Privacy-focused (uncensored models)",
     choices: ["venice-api-key"],
+  },
+  {
+    value: "redpill",
+    label: "RedPill AI",
+    hint: "TEE confidential inference",
+    choices: ["redpill-api-key"],
   },
   {
     value: "google",
@@ -201,6 +208,11 @@ export function buildAuthChoiceOptions(params: {
     value: "venice-api-key",
     label: "Venice AI API key",
     hint: "Privacy-focused inference (uncensored models)",
+  });
+  options.push({
+    value: "redpill-api-key",
+    label: "RedPill AI API key",
+    hint: "TEE confidential inference with cryptographic attestation",
   });
   options.push({
     value: "github-copilot",

@@ -13,6 +13,7 @@ import {
   SYNTHETIC_MODEL_CATALOG,
 } from "./synthetic-models.js";
 import { discoverVeniceModels, VENICE_BASE_URL } from "./venice-models.js";
+import { buildRedpillProviderConfig } from "./models-config.providers.redpill.js";
 
 type ModelsConfig = NonNullable<ClawdbotConfig["models"]>;
 export type ProviderConfig = NonNullable<ModelsConfig["providers"]>[string];
@@ -400,6 +401,13 @@ export async function resolveImplicitProviders(params: {
     resolveApiKeyFromProfiles({ provider: "venice", store: authStore });
   if (veniceKey) {
     providers.venice = { ...(await buildVeniceProvider()), apiKey: veniceKey };
+  }
+
+  const redpillKey =
+    resolveEnvApiKeyVarName("redpill") ??
+    resolveApiKeyFromProfiles({ provider: "redpill", store: authStore });
+  if (redpillKey) {
+    providers.redpill = { ...buildRedpillProviderConfig(), apiKey: redpillKey };
   }
 
   const qwenProfiles = listProfilesForProvider(authStore, "qwen-portal");

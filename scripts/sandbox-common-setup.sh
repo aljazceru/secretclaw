@@ -3,11 +3,13 @@ set -euo pipefail
 
 BASE_IMAGE="${BASE_IMAGE:-clawdbot-sandbox:bookworm-slim}"
 TARGET_IMAGE="${TARGET_IMAGE:-clawdbot-sandbox-common:bookworm-slim}"
-PACKAGES="${PACKAGES:-curl wget jq coreutils grep nodejs npm python3 git ca-certificates golang-go rustc cargo unzip pkg-config libasound2-dev build-essential file}"
+PACKAGES="${PACKAGES:-curl wget jq coreutils grep nodejs npm python3 python3-pip git ca-certificates golang-go rustc cargo unzip pkg-config libasound2-dev build-essential file ffmpeg ripgrep fd-find bat htop sqlite3 vim}"
 INSTALL_PNPM="${INSTALL_PNPM:-1}"
 INSTALL_BUN="${INSTALL_BUN:-1}"
 BUN_INSTALL_DIR="${BUN_INSTALL_DIR:-/opt/bun}"
-INSTALL_BREW="${INSTALL_BREW:-1}"
+# DEPRECATED: Homebrew is no longer used by default. Use apt/dnf system packages instead.
+# Set INSTALL_BREW=1 to re-enable Homebrew for backward compatibility.
+INSTALL_BREW="${INSTALL_BREW:-0}"
 BREW_INSTALL_DIR="${BREW_INSTALL_DIR:-/home/linuxbrew/.linuxbrew}"
 
 if ! docker image inspect "${BASE_IMAGE}" >/dev/null 2>&1; then
@@ -59,7 +61,9 @@ EOF
 
 cat <<NOTE
 Built ${TARGET_IMAGE}.
-To use it, set agents.defaults.sandbox.docker.image to "${TARGET_IMAGE}" and restart.
-If you want a clean re-create, remove old sandbox containers:
+System packages installed via apt. Homebrew disabled by default.
+To use: set agents.defaults.sandbox.docker.image to "${TARGET_IMAGE}" and restart.
+To enable Homebrew: set INSTALL_BREW=1 before building.
+To remove old sandbox containers:
   docker rm -f \$(docker ps -aq --filter label=clawdbot.sandbox=1)
 NOTE

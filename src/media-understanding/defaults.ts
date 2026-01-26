@@ -34,3 +34,4 @@ export const DEFAULT_AUDIO_MODELS: Record<string, string> = {
 };
 export const CLI_OUTPUT_MAX_BUFFER = 5 * MB;
 export const DEFAULT_MEDIA_CONCURRENCY = 2;
+export const DEFAULT_PREFER_LOCAL_AUDIO = true;

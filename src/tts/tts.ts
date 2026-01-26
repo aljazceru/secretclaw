@@ -43,6 +43,10 @@ const DEFAULT_TTS_SUMMARIZE = true;
 const DEFAULT_MAX_TEXT_LENGTH = 4000;
 const TEMP_FILE_CLEANUP_DELAY_MS = 5 * 60 * 1000; // 5 minutes
 
+const DEFAULT_QWEN3_BASE_URL = "http://localhost:8000";
+const DEFAULT_QWEN3_MODEL = "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice";
+const DEFAULT_QWEN3_VOICE = "Vivian";
+const DEFAULT_QWEN3_LANGUAGE = "Auto";
 const DEFAULT_ELEVENLABS_BASE_URL = "https://api.elevenlabs.io";
 const DEFAULT_ELEVENLABS_VOICE_ID = "pMsXgVXv3BLzUgSXRplE";
 const DEFAULT_ELEVENLABS_MODEL_ID = "eleven_multilingual_v2";
@@ -90,6 +94,14 @@ export type ResolvedTtsConfig = {
   providerSource: "config" | "default";
   summaryModel?: string;
   modelOverrides: ResolvedTtsModelOverrides;
+  qwen3: {
+    enabled: boolean;
+    baseUrl: string;
+    model: string;
+    voice: string;
+    language: string;
+    instruct?: string;
+  };
   elevenlabs: {
     apiKey?: string;
     baseUrl: string;
@@ -253,10 +265,18 @@ export function resolveTtsConfig(cfg: ClawdbotConfig): ResolvedTtsConfig {
   return {
     auto,
     mode: raw.mode ?? "final",
-    provider: raw.provider ?? "edge",
+    provider: raw.provider ?? "qwen3",
     providerSource,
     summaryModel: raw.summaryModel?.trim() || undefined,
     modelOverrides: resolveModelOverridePolicy(raw.modelOverrides),
+    qwen3: {
+      enabled: raw.qwen3?.enabled ?? true,
+      baseUrl: raw.qwen3?.baseUrl?.trim() || DEFAULT_QWEN3_BASE_URL,
+      model: raw.qwen3?.model?.trim() || DEFAULT_QWEN3_MODEL,
+      voice: raw.qwen3?.voice?.trim() || DEFAULT_QWEN3_VOICE,
+      language: raw.qwen3?.language?.trim() || DEFAULT_QWEN3_LANGUAGE,
+      instruct: raw.qwen3?.instruct?.trim() || undefined,
+    },
     elevenlabs: {
       apiKey: raw.elevenlabs?.apiKey,
       baseUrl: raw.elevenlabs?.baseUrl?.trim() || DEFAULT_ELEVENLABS_BASE_URL,
@@ -410,6 +430,7 @@ export function getTtsProvider(config: ResolvedTtsConfig, prefsPath: string): Tt
   if (prefs.tts?.provider) return prefs.tts.provider;
   if (config.providerSource === "config") return config.provider;
 
+  if (config.qwen3.enabled) return "qwen3";
   if (resolveTtsApiKey(config, "openai")) return "openai";
   if (resolveTtsApiKey(config, "elevenlabs")) return "elevenlabs";
   return "edge";
@@ -477,13 +498,14 @@ export function resolveTtsApiKey(
   return undefined;
 }
 
-export const TTS_PROVIDERS = ["openai", "elevenlabs", "edge"] as const;
+export const TTS_PROVIDERS = ["qwen3", "openai", "elevenlabs", "edge"] as const;
 
 export function resolveTtsProviderOrder(primary: TtsProvider): TtsProvider[] {
   return [primary, ...TTS_PROVIDERS.filter((provider) => provider !== primary)];
 }
 
 export function isTtsProviderConfigured(config: ResolvedTtsConfig, provider: TtsProvider): boolean {
+  if (provider === "qwen3") return config.qwen3.enabled;
   if (provider === "edge") return config.edge.enabled;
   return Boolean(resolveTtsApiKey(config, provider));
 }
@@ -1068,6 +1090,146 @@ async function edgeTTS(params: {
   await tts.ttsPromise(text, outputPath);
 }
 
+/**
+ * Generate speech using Qwen3-TTS via Gradio API.
+ * Uses the generate_custom_voice endpoint with predefined speakers.
+ */
+async function qwen3TTS(params: {
+  text: string;
+  baseUrl: string;
+  model: string;
+  voice: string;
+  language: string;
+  instruct?: string;
+  timeoutMs: number;
+}): Promise<Buffer> {
+  const { text, baseUrl, model, voice, language, instruct, timeoutMs } = params;
+  const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, "");
+  const modelSize = model.includes("0.6B") ? "0.6B" : "1.7B";
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const submitUrl = `${normalizedBaseUrl}/call/generate_custom_voice`;
+    const submitResponse = await fetch(submitUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: [text, language, voice, instruct || "", modelSize],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!submitResponse.ok) {
+      throw new Error(`Qwen3-TTS submit failed (${submitResponse.status})`);
+    }
+
+    const submitResult = (await submitResponse.json()) as { event_id: string };
+    if (!submitResult.event_id) {
+      throw new Error("No event_id returned from Qwen3-TTS");
+    }
+
+    const streamUrl = `${normalizedBaseUrl}/call/generate_custom_voice/${submitResult.event_id}`;
+    const streamResponse = await fetch(streamUrl, {
+      method: "GET",
+      headers: {
+        Accept: "text/event-stream",
+      },
+      signal: controller.signal,
+    });
+
+    if (!streamResponse.ok) {
+      throw new Error(`Qwen3-TTS stream failed (${streamResponse.status})`);
+    }
+
+    const streamText = await streamResponse.text();
+    const lines = streamText.split("\n").filter((line) => line.startsWith("data: "));
+
+    let audioData: number[] | undefined;
+    let sampleRate: number | undefined;
+
+    for (const line of lines) {
+      const data = line.slice(6);
+      if (!data || data === "[object Object]") continue;
+
+      try {
+        const parsed = JSON.parse(data) as
+          | string
+          | { type: string; data?: unknown }
+          | [number, { name: string; data: number[] }];
+
+        if (typeof parsed === "string") continue;
+
+        if (Array.isArray(parsed) && parsed.length === 2) {
+          const [rate, audioObj] = parsed;
+          if (typeof rate === "number" && audioObj?.data) {
+            sampleRate = rate;
+            audioData = audioObj.data;
+            break;
+          }
+        }
+
+        if (typeof parsed === "object" && "type" in parsed) {
+          if (parsed.type === "complete" && Array.isArray(parsed.data)) {
+            const [rate, audioObj] = parsed.data as [number, { name: string; data: number[] }];
+            sampleRate = rate;
+            audioData = audioObj?.data;
+            break;
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    if (!audioData || !sampleRate) {
+      throw new Error("No audio data received from Qwen3-TTS");
+    }
+
+    const int16Array = new Int16Array(audioData);
+    const wavBuffer = createWavBuffer(int16Array, sampleRate);
+    return wavBuffer;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Create a WAV file buffer from PCM audio data.
+ */
+function createWavBuffer(samples: Int16Array, sampleRate: number): Buffer {
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const dataSize = samples.length * 2;
+  const headerSize = 44;
+  const buffer = Buffer.alloc(headerSize + dataSize);
+
+  buffer.write("RIFF", 0);
+  buffer.writeUInt32LE(headerSize + dataSize - 8, 4);
+  buffer.write("WAVE", 8);
+  buffer.write("fmt ", 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(byteRate, 28);
+  buffer.writeUInt16LE(blockAlign, 32);
+  buffer.writeUInt16LE(bitsPerSample, 34);
+  buffer.write("data", 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  for (let i = 0; i < samples.length; i++) {
+    buffer.writeInt16LE(samples[i], headerSize + i * 2);
+  }
+
+  return buffer;
+}
+
 export async function textToSpeech(params: {
   text: string;
   cfg: ClawdbotConfig;
@@ -1097,6 +1259,38 @@ export async function textToSpeech(params: {
   for (const provider of providers) {
     const providerStart = Date.now();
     try {
+      if (provider === "qwen3") {
+        if (!config.qwen3.enabled) {
+          lastError = "qwen3: disabled";
+          continue;
+        }
+
+        const audioBuffer = await qwen3TTS({
+          text: params.text,
+          baseUrl: config.qwen3.baseUrl,
+          model: config.qwen3.model,
+          voice: config.qwen3.voice,
+          language: config.qwen3.language,
+          instruct: config.qwen3.instruct,
+          timeoutMs: config.timeoutMs,
+        });
+
+        const latencyMs = Date.now() - providerStart;
+        const tempDir = mkdtempSync(path.join(tmpdir(), "tts-"));
+        const audioPath = path.join(tempDir, `voice-${Date.now()}.wav`);
+        writeFileSync(audioPath, audioBuffer);
+        scheduleCleanup(tempDir);
+
+        return {
+          success: true,
+          audioPath,
+          latencyMs,
+          provider,
+          outputFormat: "wav",
+          voiceCompatible: false,
+        };
+      }
+
       if (provider === "edge") {
         if (!config.edge.enabled) {
           lastError = "edge: disabled";
@@ -1262,6 +1456,11 @@ export async function textToSpeechTelephony(params: {
   for (const provider of providers) {
     const providerStart = Date.now();
     try {
+      if (provider === "qwen3") {
+        lastError = "qwen3: unsupported for telephony";
+        continue;
+      }
+
       if (provider === "edge") {
         lastError = "edge: unsupported for telephony";
         continue;

@@ -22,6 +22,7 @@ import { MediaAttachmentCache, normalizeAttachments, selectAttachments } from ".
 import {
   CLI_OUTPUT_MAX_BUFFER,
   DEFAULT_AUDIO_MODELS,
+  DEFAULT_PREFER_LOCAL_AUDIO,
   DEFAULT_TIMEOUT_SECONDS,
 } from "./defaults.js";
 import { isMediaUnderstandingSkipError, MediaUnderstandingSkipError } from "./errors.js";
@@ -398,13 +399,35 @@ async function resolveAutoEntries(params: {
   providerRegistry: ProviderRegistry;
   capability: MediaUnderstandingCapability;
   activeModel?: ActiveMediaModel;
+  config?: MediaUnderstandingConfig;
 }): Promise<MediaUnderstandingModelConfig[]> {
   const activeEntry = await resolveActiveModelEntry(params);
   if (activeEntry) return [activeEntry];
+
+  const preferLocal =
+    params.config?.preferLocal ??
+    params.cfg.tools?.media?.audio?.preferLocal ??
+    DEFAULT_PREFER_LOCAL_AUDIO;
+
   if (params.capability === "audio") {
-    const localAudio = await resolveLocalAudioEntry();
-    if (localAudio) return [localAudio];
+    if (preferLocal) {
+      const localAudio = await resolveLocalAudioEntry();
+      if (localAudio) return [localAudio];
+      const gemini = await resolveGeminiCliEntry(params.capability);
+      if (gemini) return [gemini];
+      const keys = await resolveKeyEntry(params);
+      if (keys) return [keys];
+    } else {
+      const keys = await resolveKeyEntry(params);
+      if (keys) return [keys];
+      const localAudio = await resolveLocalAudioEntry();
+      if (localAudio) return [localAudio];
+      const gemini = await resolveGeminiCliEntry(params.capability);
+      if (gemini) return [gemini];
+    }
+    return [];
   }
+
   const gemini = await resolveGeminiCliEntry(params.capability);
   if (gemini) return [gemini];
   const keys = await resolveKeyEntry(params);
@@ -1069,6 +1092,7 @@ export async function runCapability(params: {
       providerRegistry: params.providerRegistry,
       capability,
       activeModel: params.activeModel,
+      config,
     });
   }
   if (resolvedEntries.length === 0) {

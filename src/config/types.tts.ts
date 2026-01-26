@@ -1,4 +1,4 @@
-export type TtsProvider = "elevenlabs" | "openai" | "edge";
+export type TtsProvider = "qwen3" | "elevenlabs" | "openai" | "edge";
 
 export type TtsMode = "final" | "all";
 
@@ -36,6 +36,21 @@ export type TtsConfig = {
   summaryModel?: string;
   /** Allow the model to override TTS parameters. */
   modelOverrides?: TtsModelOverrideConfig;
+  /** Qwen3-TTS configuration. */
+  qwen3?: {
+    /** Explicitly enable Qwen3-TTS usage (no API key required). */
+    enabled?: boolean;
+    /** Base URL for Qwen3-TTS server. */
+    baseUrl?: string;
+    /** Model identifier. */
+    model?: string;
+    /** Voice/speaker name. */
+    voice?: string;
+    /** Language selection. */
+    language?: string;
+    /** Optional emotion/tone instructions. */
+    instruct?: string;
+  };
   /** ElevenLabs configuration. */
   elevenlabs?: {
     apiKey?: string;
