@@ -1,8 +1,15 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
+import {
+  normalizeProviderId,
+  parseModelRef,
+  resolveConfiguredModelRef,
+} from "../agents/model-selection.js";
 import { buildHistoryContextFromEntries, type HistoryEntry } from "../auto-reply/reply/history.js";
 import { createDefaultDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";
+import { loadConfig } from "../config/config.js";
 import { emitAgentEvent, onAgentEvent } from "../infra/agent-events.js";
 import { defaultRuntime } from "../runtime.js";
 import { authorizeGatewayConnect, type ResolvedGatewayAuth } from "./auth.js";
@@ -204,6 +211,24 @@ export async function handleOpenAiHttpRequest(
   const stream = Boolean(payload.stream);
   const model = typeof payload.model === "string" ? payload.model : "openclaw";
   const user = typeof payload.user === "string" ? payload.user : undefined;
+
+  const cfg = loadConfig();
+  const defaultRef = resolveConfiguredModelRef({
+    cfg,
+    defaultProvider: DEFAULT_PROVIDER,
+    defaultModel: DEFAULT_MODEL,
+  });
+  const parsedModel = parseModelRef(model, defaultRef.provider);
+  const providerForRequest = normalizeProviderId(parsedModel?.provider ?? defaultRef.provider);
+  if (!stream && providerForRequest === "maple") {
+    sendJson(res, 400, {
+      error: {
+        message: "Maple requires streaming responses. Set stream=true.",
+        type: "invalid_request_error",
+      },
+    });
+    return true;
+  }
 
   const agentId = resolveAgentIdForRequest({ req, model });
   const sessionKey = resolveOpenAiSessionKey({ req, agentId, user });

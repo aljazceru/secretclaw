@@ -5,6 +5,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenClawConfig } from "../../config/config.js";
 import { __testing, createImageTool, resolveImageModelConfigForTool } from "./image-tool.js";
 
+vi.mock("@mariozechner/pi-ai", () => ({
+  complete: vi.fn(async () => ({
+    role: "assistant",
+    api: "openai-completions",
+    provider: "maple",
+    model: "qwen3-vl-30b",
+    stopReason: "stop",
+    timestamp: Date.now(),
+    usage: {
+      input: 0,
+      output: 0,
+      cacheRead: 0,
+      cacheWrite: 0,
+      totalTokens: 0,
+      cost: {
+        input: 0,
+        output: 0,
+        cacheRead: 0,
+        cacheWrite: 0,
+        total: 0,
+      },
+    },
+    content: [{ type: "text", text: "ok" }],
+  })),
+}));
+
 async function writeAuthProfiles(agentDir: string, profiles: unknown) {
   await fs.mkdir(agentDir, { recursive: true });
   await fs.writeFile(
@@ -15,13 +41,9 @@ async function writeAuthProfiles(agentDir: string, profiles: unknown) {
 }
 
 describe("image tool implicit imageModel config", () => {
-  const priorFetch = global.fetch;
-
   beforeEach(() => {
-    vi.stubEnv("OPENAI_API_KEY", "");
-    vi.stubEnv("ANTHROPIC_API_KEY", "");
-    vi.stubEnv("ANTHROPIC_OAUTH_TOKEN", "");
-    vi.stubEnv("MINIMAX_API_KEY", "");
+    vi.stubEnv("MAPLE_API_KEY", "");
+    vi.stubEnv("PRIVATEMODE_API_KEY", "");
     // Avoid implicit Copilot provider discovery hitting the network in tests.
     vi.stubEnv("COPILOT_GITHUB_TOKEN", "");
     vi.stubEnv("GH_TOKEN", "");
@@ -30,30 +52,25 @@ describe("image tool implicit imageModel config", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    // @ts-expect-error global fetch cleanup
-    global.fetch = priorFetch;
   });
 
   it("stays disabled without auth when no pairing is possible", async () => {
     const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
     const cfg: OpenClawConfig = {
-      agents: { defaults: { model: { primary: "openai/gpt-5.2" } } },
+      agents: { defaults: { model: { primary: "privatemode/llama-3.3-70b" } } },
     };
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toBeNull();
     expect(createImageTool({ config: cfg, agentDir })).toBeNull();
   });
 
-  it("pairs minimax primary with MiniMax-VL-01 (and fallbacks) when auth exists", async () => {
+  it("pairs maple primary with a Maple vision model when auth exists", async () => {
     const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
-    vi.stubEnv("MINIMAX_API_KEY", "minimax-test");
-    vi.stubEnv("OPENAI_API_KEY", "openai-test");
-    vi.stubEnv("ANTHROPIC_API_KEY", "anthropic-test");
+    vi.stubEnv("MAPLE_API_KEY", "maple-test");
     const cfg: OpenClawConfig = {
-      agents: { defaults: { model: { primary: "minimax/MiniMax-M2.1" } } },
+      agents: { defaults: { model: { primary: "maple/kimi-k2-5" } } },
     };
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toEqual({
-      primary: "minimax/MiniMax-VL-01",
-      fallbacks: ["openai/gpt-5-mini", "anthropic/claude-opus-4-5"],
+      primary: "maple/qwen3-vl-30b",
     });
     expect(createImageTool({ config: cfg, agentDir })).not.toBeNull();
   });
@@ -90,27 +107,23 @@ describe("image tool implicit imageModel config", () => {
     const cfg: OpenClawConfig = {
       agents: {
         defaults: {
-          model: { primary: "minimax/MiniMax-M2.1" },
-          imageModel: { primary: "openai/gpt-5-mini" },
+          model: { primary: "privatemode/llama-3.3-70b" },
+          imageModel: { primary: "maple/qwen3-vl-30b" },
         },
       },
     };
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toEqual({
-      primary: "openai/gpt-5-mini",
+      primary: "maple/qwen3-vl-30b",
     });
   });
 
   it("keeps image tool available when primary model supports images (for explicit requests)", async () => {
-    // When the primary model supports images, we still keep the tool available
-    // because images are auto-injected into prompts. The tool description is
-    // adjusted via modelHasVision to discourage redundant usage.
-    vi.stubEnv("OPENAI_API_KEY", "test-key");
     const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
     const cfg: OpenClawConfig = {
       agents: {
         defaults: {
           model: { primary: "acme/vision-1" },
-          imageModel: { primary: "openai/gpt-5-mini" },
+          imageModel: { primary: "maple/qwen3-vl-30b" },
         },
       },
       models: {
@@ -121,9 +134,8 @@ describe("image tool implicit imageModel config", () => {
         },
       },
     };
-    // Tool should still be available for explicit image analysis requests
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toEqual({
-      primary: "openai/gpt-5-mini",
+      primary: "maple/qwen3-vl-30b",
     });
     const tool = createImageTool({ config: cfg, agentDir, modelHasVision: true });
     expect(tool).not.toBeNull();
@@ -140,9 +152,13 @@ describe("image tool implicit imageModel config", () => {
     await fs.mkdir(sandboxRoot, { recursive: true });
     await fs.writeFile(path.join(sandboxRoot, "img.png"), "fake", "utf8");
 
-    vi.stubEnv("OPENAI_API_KEY", "openai-test");
     const cfg: OpenClawConfig = {
-      agents: { defaults: { model: { primary: "minimax/MiniMax-M2.1" } } },
+      agents: {
+        defaults: {
+          model: { primary: "privatemode/llama-3.3-70b" },
+          imageModel: { primary: "maple/qwen3-vl-30b" },
+        },
+      },
     };
     const tool = createImageTool({ config: cfg, agentDir, sandboxRoot });
     expect(tool).not.toBeNull();
@@ -163,6 +179,7 @@ describe("image tool implicit imageModel config", () => {
     const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-sandbox-"));
     const agentDir = path.join(stateDir, "agent");
     const sandboxRoot = path.join(stateDir, "sandbox");
+    vi.stubEnv("MAPLE_API_KEY", "maple-test");
     await fs.mkdir(agentDir, { recursive: true });
     await fs.mkdir(path.join(sandboxRoot, "media", "inbound"), {
       recursive: true,
@@ -174,25 +191,11 @@ describe("image tool implicit imageModel config", () => {
       Buffer.from(pngB64, "base64"),
     );
 
-    const fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      headers: new Headers(),
-      json: async () => ({
-        content: "ok",
-        base_resp: { status_code: 0, status_msg: "" },
-      }),
-    });
-    // @ts-expect-error partial global
-    global.fetch = fetch;
-    vi.stubEnv("MINIMAX_API_KEY", "minimax-test");
-
     const cfg: OpenClawConfig = {
       agents: {
         defaults: {
-          model: { primary: "minimax/MiniMax-M2.1" },
-          imageModel: { primary: "minimax/MiniMax-VL-01" },
+          model: { primary: "privatemode/llama-3.3-70b" },
+          imageModel: { primary: "maple/qwen3-vl-30b" },
         },
       },
     };
@@ -207,7 +210,6 @@ describe("image tool implicit imageModel config", () => {
       image: "@/Users/steipete/.openclaw/media/inbound/photo.png",
     });
 
-    expect(fetch).toHaveBeenCalledTimes(1);
     expect((res.details as { rewrittenFrom?: string }).rewrittenFrom).toContain("photo.png");
   });
 });
@@ -229,113 +231,17 @@ describe("image tool data URL support", () => {
   });
 });
 
-describe("image tool MiniMax VLM routing", () => {
-  const pngB64 =
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/woAAn8B9FD5fHAAAAAASUVORK5CYII=";
-  const priorFetch = global.fetch;
-
-  beforeEach(() => {
-    vi.stubEnv("MINIMAX_API_KEY", "");
-    vi.stubEnv("COPILOT_GITHUB_TOKEN", "");
-    vi.stubEnv("GH_TOKEN", "");
-    vi.stubEnv("GITHUB_TOKEN", "");
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-    // @ts-expect-error global fetch cleanup
-    global.fetch = priorFetch;
-  });
-
-  it("calls /v1/coding_plan/vlm for minimax image models", async () => {
-    const fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      headers: new Headers(),
-      json: async () => ({
-        content: "ok",
-        base_resp: { status_code: 0, status_msg: "" },
-      }),
-    });
-    // @ts-expect-error partial global
-    global.fetch = fetch;
-
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-minimax-vlm-"));
-    vi.stubEnv("MINIMAX_API_KEY", "minimax-test");
-    const cfg: OpenClawConfig = {
-      agents: { defaults: { model: { primary: "minimax/MiniMax-M2.1" } } },
-    };
-    const tool = createImageTool({ config: cfg, agentDir });
-    expect(tool).not.toBeNull();
-    if (!tool) {
-      throw new Error("expected image tool");
-    }
-
-    const res = await tool.execute("t1", {
-      prompt: "Describe the image.",
-      image: `data:image/png;base64,${pngB64}`,
-    });
-
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const [url, init] = fetch.mock.calls[0];
-    expect(String(url)).toBe("https://api.minimax.chat/v1/coding_plan/vlm");
-    expect(init?.method).toBe("POST");
-    expect(String((init?.headers as Record<string, string>)?.Authorization)).toBe(
-      "Bearer minimax-test",
-    );
-    expect(String(init?.body)).toContain('"prompt":"Describe the image."');
-    expect(String(init?.body)).toContain('"image_url":"data:image/png;base64,');
-
-    const text = res.content?.find((b) => b.type === "text")?.text ?? "";
-    expect(text).toBe("ok");
-  });
-
-  it("surfaces MiniMax API errors from /v1/coding_plan/vlm", async () => {
-    const fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      headers: new Headers(),
-      json: async () => ({
-        content: "",
-        base_resp: { status_code: 1004, status_msg: "bad key" },
-      }),
-    });
-    // @ts-expect-error partial global
-    global.fetch = fetch;
-
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-minimax-vlm-"));
-    vi.stubEnv("MINIMAX_API_KEY", "minimax-test");
-    const cfg: OpenClawConfig = {
-      agents: { defaults: { model: { primary: "minimax/MiniMax-M2.1" } } },
-    };
-    const tool = createImageTool({ config: cfg, agentDir });
-    expect(tool).not.toBeNull();
-    if (!tool) {
-      throw new Error("expected image tool");
-    }
-
-    await expect(
-      tool.execute("t1", {
-        prompt: "Describe the image.",
-        image: `data:image/png;base64,${pngB64}`,
-      }),
-    ).rejects.toThrow(/MiniMax VLM API error/i);
-  });
-});
-
 describe("image tool response validation", () => {
   it("rejects image-model responses with no final text", () => {
     expect(() =>
       __testing.coerceImageAssistantText({
-        provider: "openai",
-        model: "gpt-5-mini",
+        provider: "maple",
+        model: "qwen3-vl-30b",
         message: {
           role: "assistant",
-          api: "openai-responses",
-          provider: "openai",
-          model: "gpt-5-mini",
+          api: "openai-completions",
+          provider: "maple",
+          model: "qwen3-vl-30b",
           stopReason: "stop",
           timestamp: Date.now(),
           usage: {
@@ -361,13 +267,13 @@ describe("image tool response validation", () => {
   it("surfaces provider errors from image-model responses", () => {
     expect(() =>
       __testing.coerceImageAssistantText({
-        provider: "openai",
-        model: "gpt-5-mini",
+        provider: "maple",
+        model: "qwen3-vl-30b",
         message: {
           role: "assistant",
-          api: "openai-responses",
-          provider: "openai",
-          model: "gpt-5-mini",
+          api: "openai-completions",
+          provider: "maple",
+          model: "qwen3-vl-30b",
           stopReason: "error",
           errorMessage: "boom",
           timestamp: Date.now(),
@@ -393,13 +299,13 @@ describe("image tool response validation", () => {
 
   it("returns trimmed text from image-model responses", () => {
     const text = __testing.coerceImageAssistantText({
-      provider: "anthropic",
-      model: "claude-opus-4-5",
+      provider: "privatemode",
+      model: "llama-3.3-70b",
       message: {
         role: "assistant",
-        api: "anthropic-messages",
-        provider: "anthropic",
-        model: "claude-opus-4-5",
+        api: "openai-completions",
+        provider: "privatemode",
+        model: "llama-3.3-70b",
         stopReason: "stop",
         timestamp: Date.now(),
         usage: {

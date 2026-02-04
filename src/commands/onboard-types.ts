@@ -2,39 +2,7 @@ import type { ChannelId } from "../channels/plugins/types.js";
 import type { GatewayDaemonRuntime } from "./daemon-runtime.js";
 
 export type OnboardMode = "local" | "remote";
-export type AuthChoice =
-  // Legacy alias for `setup-token` (kept for backwards CLI compatibility).
-  | "oauth"
-  | "setup-token"
-  | "claude-cli"
-  | "token"
-  | "chutes"
-  | "openai-codex"
-  | "openai-api-key"
-  | "openrouter-api-key"
-  | "ai-gateway-api-key"
-  | "moonshot-api-key"
-  | "moonshot-api-key-cn"
-  | "kimi-code-api-key"
-  | "synthetic-api-key"
-  | "venice-api-key"
-  | "codex-cli"
-  | "apiKey"
-  | "gemini-api-key"
-  | "google-antigravity"
-  | "google-gemini-cli"
-  | "zai-api-key"
-  | "xiaomi-api-key"
-  | "minimax-cloud"
-  | "minimax"
-  | "minimax-api"
-  | "minimax-api-lightning"
-  | "minimax-portal"
-  | "opencode-zen"
-  | "github-copilot"
-  | "copilot-proxy"
-  | "qwen-portal"
-  | "skip";
+export type AuthChoice = "maple-api-key" | "privatemode-api-key" | "skip";
 export type GatewayAuthChoice = "token" | "password";
 export type ResetScope = "config" | "config+creds+sessions" | "full";
 export type GatewayBind = "loopback" | "lan" | "auto" | "custom" | "tailnet";
@@ -54,27 +22,10 @@ export type OnboardOptions = {
   acceptRisk?: boolean;
   reset?: boolean;
   authChoice?: AuthChoice;
-  /** Used when `authChoice=token` in non-interactive mode. */
-  tokenProvider?: string;
-  /** Used when `authChoice=token` in non-interactive mode. */
-  token?: string;
-  /** Used when `authChoice=token` in non-interactive mode. */
-  tokenProfileId?: string;
-  /** Used when `authChoice=token` in non-interactive mode. */
-  tokenExpiresIn?: string;
-  anthropicApiKey?: string;
-  openaiApiKey?: string;
-  openrouterApiKey?: string;
-  aiGatewayApiKey?: string;
-  moonshotApiKey?: string;
-  kimiCodeApiKey?: string;
-  geminiApiKey?: string;
-  zaiApiKey?: string;
-  xiaomiApiKey?: string;
-  minimaxApiKey?: string;
-  syntheticApiKey?: string;
-  veniceApiKey?: string;
-  opencodeZenApiKey?: string;
+  mapleApiKey?: string;
+  mapleBaseUrl?: string;
+  privatemodeApiKey?: string;
+  privatemodeBaseUrl?: string;
   gatewayPort?: number;
   gatewayBind?: GatewayBind;
   gatewayAuth?: GatewayAuthChoice;

@@ -8,7 +8,6 @@ import { resolveUserPath } from "../../utils.js";
 import { loadWebMedia } from "../../web/media.js";
 import { ensureAuthProfileStore, listProfilesForProvider } from "../auth-profiles.js";
 import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../defaults.js";
-import { minimaxUnderstandImage } from "../minimax-vlm.js";
 import { getApiKeyForModel, requireApiKey, resolveEnvApiKey } from "../model-auth.js";
 import { runWithImageModelFallback } from "../model-fallback.js";
 import { resolveConfiguredModelRef } from "../model-selection.js";
@@ -77,26 +76,6 @@ export function resolveImageModelConfigForTool(params: {
   }
 
   const primary = resolveDefaultModelRef(params.cfg);
-  const openaiOk = hasAuthForProvider({
-    provider: "openai",
-    agentDir: params.agentDir,
-  });
-  const anthropicOk = hasAuthForProvider({
-    provider: "anthropic",
-    agentDir: params.agentDir,
-  });
-
-  const fallbacks: string[] = [];
-  const addFallback = (modelRef: string | null) => {
-    const ref = (modelRef ?? "").trim();
-    if (!ref) {
-      return;
-    }
-    if (fallbacks.includes(ref)) {
-      return;
-    }
-    fallbacks.push(ref);
-  };
 
   const providerVisionFromConfig = resolveProviderVisionModelFromConfig({
     cfg: params.cfg,
@@ -107,46 +86,27 @@ export function resolveImageModelConfigForTool(params: {
     agentDir: params.agentDir,
   });
 
+  const mapleOk = hasAuthForProvider({
+    provider: "maple",
+    agentDir: params.agentDir,
+  });
+  const mapleVisionFromConfig = resolveProviderVisionModelFromConfig({
+    cfg: params.cfg,
+    provider: "maple",
+  });
+
   let preferred: string | null = null;
 
-  // MiniMax users: always try the canonical vision model first when auth exists.
-  if (primary.provider === "minimax" && providerOk) {
-    preferred = "minimax/MiniMax-VL-01";
-  } else if (providerOk && providerVisionFromConfig) {
+  if (providerOk && providerVisionFromConfig) {
     preferred = providerVisionFromConfig;
-  } else if (primary.provider === "openai" && openaiOk) {
-    preferred = "openai/gpt-5-mini";
-  } else if (primary.provider === "anthropic" && anthropicOk) {
-    preferred = "anthropic/claude-opus-4-5";
+  } else if (mapleOk) {
+    preferred = mapleVisionFromConfig ?? "maple/qwen3-vl-30b";
   }
 
   if (preferred?.trim()) {
-    if (openaiOk) {
-      addFallback("openai/gpt-5-mini");
-    }
-    if (anthropicOk) {
-      addFallback("anthropic/claude-opus-4-5");
-    }
-    // Don't duplicate primary in fallbacks.
-    const pruned = fallbacks.filter((ref) => ref !== preferred);
     return {
       primary: preferred,
-      ...(pruned.length > 0 ? { fallbacks: pruned } : {}),
     };
-  }
-
-  // Cross-provider fallback when we can't pair with the primary provider.
-  if (openaiOk) {
-    if (anthropicOk) {
-      addFallback("anthropic/claude-opus-4-5");
-    }
-    return {
-      primary: "openai/gpt-5-mini",
-      ...(fallbacks.length ? { fallbacks } : {}),
-    };
-  }
-  if (anthropicOk) {
-    return { primary: "anthropic/claude-opus-4-5" };
   }
 
   return null;
@@ -259,16 +219,6 @@ async function runImagePrompt(params: {
       const apiKey = requireApiKey(apiKeyInfo, model.provider);
       authStorage.setRuntimeApiKey(model.provider, apiKey);
       const imageDataUrl = `data:${params.mimeType};base64,${params.base64}`;
-
-      if (model.provider === "minimax") {
-        const text = await minimaxUnderstandImage({
-          apiKey,
-          prompt: params.prompt,
-          imageDataUrl,
-          modelBaseUrl: model.baseUrl,
-        });
-        return { text, provider: model.provider, model: model.id };
-      }
 
       const context = buildImageContext(params.prompt, params.base64, params.mimeType);
       const message = await complete(model, context, {

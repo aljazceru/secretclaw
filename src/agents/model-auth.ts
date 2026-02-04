@@ -209,15 +209,6 @@ export async function resolveApiKeyForProvider(params: {
     return resolveAwsSdkAuthInfo();
   }
 
-  if (provider === "openai") {
-    const hasCodex = listProfilesForProvider(store, "openai-codex").length > 0;
-    if (hasCodex) {
-      throw new Error(
-        'No API key found for provider "openai". You are authenticated with OpenAI Codex OAuth. Use openai-codex/gpt-5.2 (ChatGPT OAuth) or set OPENAI_API_KEY for openai/gpt-5.2.',
-      );
-    }
-  }
-
   const authStorePath = resolveAuthStorePathForDisplay(params.agentDir);
   const resolvedAgentDir = path.dirname(authStorePath);
   throw new Error(
@@ -248,16 +239,8 @@ export function resolveEnvApiKey(provider: string): EnvApiKeyResult | null {
     return pick("COPILOT_GITHUB_TOKEN") ?? pick("GH_TOKEN") ?? pick("GITHUB_TOKEN");
   }
 
-  if (normalized === "anthropic") {
-    return pick("ANTHROPIC_OAUTH_TOKEN") ?? pick("ANTHROPIC_API_KEY");
-  }
-
   if (normalized === "chutes") {
     return pick("CHUTES_OAUTH_TOKEN") ?? pick("CHUTES_API_KEY");
-  }
-
-  if (normalized === "zai") {
-    return pick("ZAI_API_KEY") ?? pick("Z_AI_API_KEY");
   }
 
   if (normalized === "google-vertex") {
@@ -268,38 +251,14 @@ export function resolveEnvApiKey(provider: string): EnvApiKeyResult | null {
     return { apiKey: envKey, source: "gcloud adc" };
   }
 
-  if (normalized === "opencode") {
-    return pick("OPENCODE_API_KEY") ?? pick("OPENCODE_ZEN_API_KEY");
-  }
-
-  if (normalized === "qwen-portal") {
-    return pick("QWEN_OAUTH_TOKEN") ?? pick("QWEN_PORTAL_API_KEY");
-  }
-
-  if (normalized === "minimax-portal") {
-    return pick("MINIMAX_OAUTH_TOKEN") ?? pick("MINIMAX_API_KEY");
-  }
-
-  if (normalized === "kimi-coding") {
-    return pick("KIMI_API_KEY") ?? pick("KIMICODE_API_KEY");
-  }
-
   const envMap: Record<string, string> = {
-    openai: "OPENAI_API_KEY",
-    google: "GEMINI_API_KEY",
     groq: "GROQ_API_KEY",
     deepgram: "DEEPGRAM_API_KEY",
     cerebras: "CEREBRAS_API_KEY",
     xai: "XAI_API_KEY",
-    openrouter: "OPENROUTER_API_KEY",
-    "vercel-ai-gateway": "AI_GATEWAY_API_KEY",
-    moonshot: "MOONSHOT_API_KEY",
-    minimax: "MINIMAX_API_KEY",
-    xiaomi: "XIAOMI_API_KEY",
-    synthetic: "SYNTHETIC_API_KEY",
-    venice: "VENICE_API_KEY",
+    maple: "MAPLE_API_KEY",
+    privatemode: "PRIVATEMODE_API_KEY",
     mistral: "MISTRAL_API_KEY",
-    opencode: "OPENCODE_API_KEY",
   };
   const envVar = envMap[normalized];
   if (!envVar) {

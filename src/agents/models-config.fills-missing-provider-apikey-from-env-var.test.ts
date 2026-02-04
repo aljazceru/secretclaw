@@ -46,8 +46,8 @@ describe("models-config", () => {
   it("fills missing provider.apiKey from env var name when models exist", async () => {
     await withTempHome(async () => {
       vi.resetModules();
-      const prevKey = process.env.MINIMAX_API_KEY;
-      process.env.MINIMAX_API_KEY = "sk-minimax-test";
+      const prevKey = process.env.MAPLE_API_KEY;
+      process.env.MAPLE_API_KEY = "sk-maple-test";
       try {
         const { ensureOpenClawModelsJson } = await import("./models-config.js");
         const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
@@ -55,17 +55,17 @@ describe("models-config", () => {
         const cfg: OpenClawConfig = {
           models: {
             providers: {
-              minimax: {
-                baseUrl: "https://api.minimax.io/anthropic",
-                api: "anthropic-messages",
+              maple: {
+                baseUrl: "http://127.0.0.1:8080/v1",
+                api: "openai-completions",
                 models: [
                   {
-                    id: "MiniMax-M2.1",
-                    name: "MiniMax M2.1",
-                    reasoning: false,
-                    input: ["text"],
+                    id: "kimi-k2-5",
+                    name: "Kimi K2.5",
+                    reasoning: true,
+                    input: ["text", "image"],
                     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-                    contextWindow: 200000,
+                    contextWindow: 262144,
                     maxTokens: 8192,
                   },
                 ],
@@ -81,14 +81,14 @@ describe("models-config", () => {
         const parsed = JSON.parse(raw) as {
           providers: Record<string, { apiKey?: string; models?: Array<{ id: string }> }>;
         };
-        expect(parsed.providers.minimax?.apiKey).toBe("MINIMAX_API_KEY");
-        const ids = parsed.providers.minimax?.models?.map((model) => model.id);
-        expect(ids).toContain("MiniMax-VL-01");
+        expect(parsed.providers.maple?.apiKey).toBe("MAPLE_API_KEY");
+        const ids = parsed.providers.maple?.models?.map((model) => model.id);
+        expect(ids).toContain("kimi-k2-5");
       } finally {
         if (prevKey === undefined) {
-          delete process.env.MINIMAX_API_KEY;
+          delete process.env.MAPLE_API_KEY;
         } else {
-          process.env.MINIMAX_API_KEY = prevKey;
+          process.env.MAPLE_API_KEY = prevKey;
         }
       }
     });

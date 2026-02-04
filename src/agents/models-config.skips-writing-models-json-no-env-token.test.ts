@@ -43,26 +43,12 @@ describe("models-config", () => {
     process.env.HOME = previousHome;
   });
 
-  it("skips writing models.json when no env token or profile exists", async () => {
+  it("writes models.json even when no env token or profile exists (TEE defaults)", async () => {
     await withTempHome(async (home) => {
-      const previous = process.env.COPILOT_GITHUB_TOKEN;
-      const previousGh = process.env.GH_TOKEN;
-      const previousGithub = process.env.GITHUB_TOKEN;
-      const previousKimiCode = process.env.KIMI_API_KEY;
-      const previousMinimax = process.env.MINIMAX_API_KEY;
-      const previousMoonshot = process.env.MOONSHOT_API_KEY;
-      const previousSynthetic = process.env.SYNTHETIC_API_KEY;
-      const previousVenice = process.env.VENICE_API_KEY;
-      const previousXiaomi = process.env.XIAOMI_API_KEY;
-      delete process.env.COPILOT_GITHUB_TOKEN;
-      delete process.env.GH_TOKEN;
-      delete process.env.GITHUB_TOKEN;
-      delete process.env.KIMI_API_KEY;
-      delete process.env.MINIMAX_API_KEY;
-      delete process.env.MOONSHOT_API_KEY;
-      delete process.env.SYNTHETIC_API_KEY;
-      delete process.env.VENICE_API_KEY;
-      delete process.env.XIAOMI_API_KEY;
+      const previousMaple = process.env.MAPLE_API_KEY;
+      const previousPrivatemode = process.env.PRIVATEMODE_API_KEY;
+      delete process.env.MAPLE_API_KEY;
+      delete process.env.PRIVATEMODE_API_KEY;
 
       try {
         vi.resetModules();
@@ -76,53 +62,23 @@ describe("models-config", () => {
           agentDir,
         );
 
-        await expect(fs.stat(path.join(agentDir, "models.json"))).rejects.toThrow();
-        expect(result.wrote).toBe(false);
+        const raw = await fs.readFile(path.join(agentDir, "models.json"), "utf8");
+        const parsed = JSON.parse(raw) as {
+          providers: Record<string, { baseUrl?: string }>;
+        };
+        expect(parsed.providers.maple).toBeDefined();
+        expect(parsed.providers.privatemode).toBeDefined();
+        expect(result.wrote).toBe(true);
       } finally {
-        if (previous === undefined) {
-          delete process.env.COPILOT_GITHUB_TOKEN;
+        if (previousMaple === undefined) {
+          delete process.env.MAPLE_API_KEY;
         } else {
-          process.env.COPILOT_GITHUB_TOKEN = previous;
+          process.env.MAPLE_API_KEY = previousMaple;
         }
-        if (previousGh === undefined) {
-          delete process.env.GH_TOKEN;
+        if (previousPrivatemode === undefined) {
+          delete process.env.PRIVATEMODE_API_KEY;
         } else {
-          process.env.GH_TOKEN = previousGh;
-        }
-        if (previousGithub === undefined) {
-          delete process.env.GITHUB_TOKEN;
-        } else {
-          process.env.GITHUB_TOKEN = previousGithub;
-        }
-        if (previousKimiCode === undefined) {
-          delete process.env.KIMI_API_KEY;
-        } else {
-          process.env.KIMI_API_KEY = previousKimiCode;
-        }
-        if (previousMinimax === undefined) {
-          delete process.env.MINIMAX_API_KEY;
-        } else {
-          process.env.MINIMAX_API_KEY = previousMinimax;
-        }
-        if (previousMoonshot === undefined) {
-          delete process.env.MOONSHOT_API_KEY;
-        } else {
-          process.env.MOONSHOT_API_KEY = previousMoonshot;
-        }
-        if (previousSynthetic === undefined) {
-          delete process.env.SYNTHETIC_API_KEY;
-        } else {
-          process.env.SYNTHETIC_API_KEY = previousSynthetic;
-        }
-        if (previousVenice === undefined) {
-          delete process.env.VENICE_API_KEY;
-        } else {
-          process.env.VENICE_API_KEY = previousVenice;
-        }
-        if (previousXiaomi === undefined) {
-          delete process.env.XIAOMI_API_KEY;
-        } else {
-          process.env.XIAOMI_API_KEY = previousXiaomi;
+          process.env.PRIVATEMODE_API_KEY = previousPrivatemode;
         }
       }
     });
@@ -144,11 +100,11 @@ describe("models-config", () => {
       expect(parsed.providers["custom-proxy"]?.baseUrl).toBe("http://localhost:4000/v1");
     });
   });
-  it("adds minimax provider when MINIMAX_API_KEY is set", async () => {
+  it("adds maple provider when MAPLE_API_KEY is set", async () => {
     await withTempHome(async () => {
       vi.resetModules();
-      const prevKey = process.env.MINIMAX_API_KEY;
-      process.env.MINIMAX_API_KEY = "sk-minimax-test";
+      const prevKey = process.env.MAPLE_API_KEY;
+      process.env.MAPLE_API_KEY = "sk-maple-test";
       try {
         const { ensureOpenClawModelsJson } = await import("./models-config.js");
         const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
@@ -167,25 +123,24 @@ describe("models-config", () => {
             }
           >;
         };
-        expect(parsed.providers.minimax?.baseUrl).toBe("https://api.minimax.chat/v1");
-        expect(parsed.providers.minimax?.apiKey).toBe("MINIMAX_API_KEY");
-        const ids = parsed.providers.minimax?.models?.map((model) => model.id);
-        expect(ids).toContain("MiniMax-M2.1");
-        expect(ids).toContain("MiniMax-VL-01");
+        expect(parsed.providers.maple?.baseUrl).toBe("http://127.0.0.1:8080/v1");
+        expect(parsed.providers.maple?.apiKey).toBe("MAPLE_API_KEY");
+        const ids = parsed.providers.maple?.models?.map((model) => model.id);
+        expect(ids).toContain("kimi-k2-5");
       } finally {
         if (prevKey === undefined) {
-          delete process.env.MINIMAX_API_KEY;
+          delete process.env.MAPLE_API_KEY;
         } else {
-          process.env.MINIMAX_API_KEY = prevKey;
+          process.env.MAPLE_API_KEY = prevKey;
         }
       }
     });
   });
-  it("adds synthetic provider when SYNTHETIC_API_KEY is set", async () => {
+  it("adds privatemode provider when PRIVATEMODE_API_KEY is set", async () => {
     await withTempHome(async () => {
       vi.resetModules();
-      const prevKey = process.env.SYNTHETIC_API_KEY;
-      process.env.SYNTHETIC_API_KEY = "sk-synthetic-test";
+      const prevKey = process.env.PRIVATEMODE_API_KEY;
+      process.env.PRIVATEMODE_API_KEY = "sk-privatemode-test";
       try {
         const { ensureOpenClawModelsJson } = await import("./models-config.js");
         const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
@@ -204,15 +159,15 @@ describe("models-config", () => {
             }
           >;
         };
-        expect(parsed.providers.synthetic?.baseUrl).toBe("https://api.synthetic.new/anthropic");
-        expect(parsed.providers.synthetic?.apiKey).toBe("SYNTHETIC_API_KEY");
-        const ids = parsed.providers.synthetic?.models?.map((model) => model.id);
-        expect(ids).toContain("hf:MiniMaxAI/MiniMax-M2.1");
+        expect(parsed.providers.privatemode?.baseUrl).toBe("http://127.0.0.1:8080/v1");
+        expect(parsed.providers.privatemode?.apiKey).toBe("PRIVATEMODE_API_KEY");
+        const ids = parsed.providers.privatemode?.models?.map((model) => model.id);
+        expect(ids).toContain("llama-3.3-70b");
       } finally {
         if (prevKey === undefined) {
-          delete process.env.SYNTHETIC_API_KEY;
+          delete process.env.PRIVATEMODE_API_KEY;
         } else {
-          process.env.SYNTHETIC_API_KEY = prevKey;
+          process.env.PRIVATEMODE_API_KEY = prevKey;
         }
       }
     });

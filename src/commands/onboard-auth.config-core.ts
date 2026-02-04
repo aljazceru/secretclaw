@@ -1,178 +1,52 @@
 import type { OpenClawConfig } from "../config/config.js";
-import { buildXiaomiProvider, XIAOMI_DEFAULT_MODEL_ID } from "../agents/models-config.providers.js";
 import {
-  buildSyntheticModelDefinition,
-  SYNTHETIC_BASE_URL,
-  SYNTHETIC_DEFAULT_MODEL_REF,
-  SYNTHETIC_MODEL_CATALOG,
-} from "../agents/synthetic-models.js";
+  buildMapleModelDefinition,
+  MAPLE_DEFAULT_BASE_URL,
+  MAPLE_DEFAULT_MODEL_REF,
+  MAPLE_MODEL_CATALOG,
+} from "../agents/maple-models.js";
 import {
-  buildVeniceModelDefinition,
-  VENICE_BASE_URL,
-  VENICE_DEFAULT_MODEL_REF,
-  VENICE_MODEL_CATALOG,
-} from "../agents/venice-models.js";
-import {
-  OPENROUTER_DEFAULT_MODEL_REF,
-  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
-  XIAOMI_DEFAULT_MODEL_REF,
-  ZAI_DEFAULT_MODEL_REF,
-} from "./onboard-auth.credentials.js";
-import {
-  buildMoonshotModelDefinition,
-  KIMI_CODING_MODEL_REF,
-  MOONSHOT_BASE_URL,
-  MOONSHOT_CN_BASE_URL,
-  MOONSHOT_DEFAULT_MODEL_ID,
-  MOONSHOT_DEFAULT_MODEL_REF,
-} from "./onboard-auth.models.js";
+  buildPrivatemodeModelDefinition,
+  PRIVATEMODE_DEFAULT_BASE_URL,
+  PRIVATEMODE_DEFAULT_MODEL_REF,
+  PRIVATEMODE_MODEL_CATALOG,
+} from "../agents/privatemode-models.js";
 
-export function applyZaiConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[ZAI_DEFAULT_MODEL_REF] = {
-    ...models[ZAI_DEFAULT_MODEL_REF],
-    alias: models[ZAI_DEFAULT_MODEL_REF]?.alias ?? "GLM",
-  };
-
-  const existingModel = cfg.agents?.defaults?.model;
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: ZAI_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applyOpenrouterProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[OPENROUTER_DEFAULT_MODEL_REF] = {
-    ...models[OPENROUTER_DEFAULT_MODEL_REF],
-    alias: models[OPENROUTER_DEFAULT_MODEL_REF]?.alias ?? "OpenRouter",
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-  };
-}
-
-export function applyVercelAiGatewayProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF] = {
-    ...models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF],
-    alias: models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF]?.alias ?? "Vercel AI Gateway",
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-  };
-}
-
-export function applyVercelAiGatewayConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyVercelAiGatewayProviderConfig(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applyOpenrouterConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyOpenrouterProviderConfig(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: OPENROUTER_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applyMoonshotProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_BASE_URL);
-}
-
-export function applyMoonshotProviderConfigCn(cfg: OpenClawConfig): OpenClawConfig {
-  return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_CN_BASE_URL);
-}
-
-function applyMoonshotProviderConfigWithBaseUrl(
+/**
+ * Apply Maple provider configuration without changing the default model.
+ * Registers Maple models and sets up the provider, but preserves existing model selection.
+ */
+export function applyMapleProviderConfig(
   cfg: OpenClawConfig,
-  baseUrl: string,
+  params?: { baseUrl?: string },
 ): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
-  models[MOONSHOT_DEFAULT_MODEL_REF] = {
-    ...models[MOONSHOT_DEFAULT_MODEL_REF],
-    alias: models[MOONSHOT_DEFAULT_MODEL_REF]?.alias ?? "Kimi",
+  models[MAPLE_DEFAULT_MODEL_REF] = {
+    ...models[MAPLE_DEFAULT_MODEL_REF],
+    alias: models[MAPLE_DEFAULT_MODEL_REF]?.alias ?? "Kimi K2.5",
   };
 
   const providers = { ...cfg.models?.providers };
-  const existingProvider = providers.moonshot;
+  const existingProvider = providers.maple;
   const existingModels = Array.isArray(existingProvider?.models) ? existingProvider.models : [];
-  const defaultModel = buildMoonshotModelDefinition();
-  const hasDefaultModel = existingModels.some((model) => model.id === MOONSHOT_DEFAULT_MODEL_ID);
-  const mergedModels = hasDefaultModel ? existingModels : [...existingModels, defaultModel];
+  const mapleModels = MAPLE_MODEL_CATALOG.map(buildMapleModelDefinition);
+  const mergedModels = [
+    ...existingModels,
+    ...mapleModels.filter((model) => !existingModels.some((existing) => existing.id === model.id)),
+  ];
   const { apiKey: existingApiKey, ...existingProviderRest } = (existingProvider ?? {}) as Record<
     string,
     unknown
   > as { apiKey?: string };
   const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
   const normalizedApiKey = resolvedApiKey?.trim();
-  providers.moonshot = {
+  const baseUrl = params?.baseUrl ?? MAPLE_DEFAULT_BASE_URL;
+  providers.maple = {
     ...existingProviderRest,
     baseUrl,
     api: "openai-completions",
     ...(normalizedApiKey ? { apiKey: normalizedApiKey } : {}),
-    models: mergedModels.length > 0 ? mergedModels : [defaultModel],
+    models: mergedModels.length > 0 ? mergedModels : mapleModels,
   };
 
   return {
@@ -191,8 +65,15 @@ function applyMoonshotProviderConfigWithBaseUrl(
   };
 }
 
-export function applyMoonshotConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyMoonshotProviderConfig(cfg);
+/**
+ * Apply Maple provider configuration AND set Maple as the default model.
+ * Use this when Maple is the primary provider choice during onboarding.
+ */
+export function applyMapleConfig(
+  cfg: OpenClawConfig,
+  params?: { baseUrl?: string },
+): OpenClawConfig {
+  const next = applyMapleProviderConfig(cfg, params);
   const existingModel = next.agents?.defaults?.model;
   return {
     ...next,
@@ -206,90 +87,34 @@ export function applyMoonshotConfig(cfg: OpenClawConfig): OpenClawConfig {
                 fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
               }
             : undefined),
-          primary: MOONSHOT_DEFAULT_MODEL_REF,
+          primary: MAPLE_DEFAULT_MODEL_REF,
         },
       },
     },
   };
 }
 
-export function applyMoonshotConfigCn(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyMoonshotProviderConfigCn(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: MOONSHOT_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applyKimiCodeProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+/**
+ * Apply Privatemode provider configuration without changing the default model.
+ * Registers Privatemode models and sets up the provider, but preserves existing model selection.
+ */
+export function applyPrivatemodeProviderConfig(
+  cfg: OpenClawConfig,
+  params?: { baseUrl?: string },
+): OpenClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
-  models[KIMI_CODING_MODEL_REF] = {
-    ...models[KIMI_CODING_MODEL_REF],
-    alias: models[KIMI_CODING_MODEL_REF]?.alias ?? "Kimi K2.5",
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-  };
-}
-
-export function applyKimiCodeConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyKimiCodeProviderConfig(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: KIMI_CODING_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applySyntheticProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[SYNTHETIC_DEFAULT_MODEL_REF] = {
-    ...models[SYNTHETIC_DEFAULT_MODEL_REF],
-    alias: models[SYNTHETIC_DEFAULT_MODEL_REF]?.alias ?? "MiniMax M2.1",
+  models[PRIVATEMODE_DEFAULT_MODEL_REF] = {
+    ...models[PRIVATEMODE_DEFAULT_MODEL_REF],
+    alias: models[PRIVATEMODE_DEFAULT_MODEL_REF]?.alias ?? "Llama 3.3 70B",
   };
 
   const providers = { ...cfg.models?.providers };
-  const existingProvider = providers.synthetic;
+  const existingProvider = providers.privatemode;
   const existingModels = Array.isArray(existingProvider?.models) ? existingProvider.models : [];
-  const syntheticModels = SYNTHETIC_MODEL_CATALOG.map(buildSyntheticModelDefinition);
+  const privatemodeModels = PRIVATEMODE_MODEL_CATALOG.map(buildPrivatemodeModelDefinition);
   const mergedModels = [
     ...existingModels,
-    ...syntheticModels.filter(
+    ...privatemodeModels.filter(
       (model) => !existingModels.some((existing) => existing.id === model.id),
     ),
   ];
@@ -299,154 +124,13 @@ export function applySyntheticProviderConfig(cfg: OpenClawConfig): OpenClawConfi
   > as { apiKey?: string };
   const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
   const normalizedApiKey = resolvedApiKey?.trim();
-  providers.synthetic = {
+  const baseUrl = params?.baseUrl ?? PRIVATEMODE_DEFAULT_BASE_URL;
+  providers.privatemode = {
     ...existingProviderRest,
-    baseUrl: SYNTHETIC_BASE_URL,
-    api: "anthropic-messages",
-    ...(normalizedApiKey ? { apiKey: normalizedApiKey } : {}),
-    models: mergedModels.length > 0 ? mergedModels : syntheticModels,
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-    models: {
-      mode: cfg.models?.mode ?? "merge",
-      providers,
-    },
-  };
-}
-
-export function applySyntheticConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applySyntheticProviderConfig(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: SYNTHETIC_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-export function applyXiaomiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[XIAOMI_DEFAULT_MODEL_REF] = {
-    ...models[XIAOMI_DEFAULT_MODEL_REF],
-    alias: models[XIAOMI_DEFAULT_MODEL_REF]?.alias ?? "Xiaomi",
-  };
-
-  const providers = { ...cfg.models?.providers };
-  const existingProvider = providers.xiaomi;
-  const defaultProvider = buildXiaomiProvider();
-  const existingModels = Array.isArray(existingProvider?.models) ? existingProvider.models : [];
-  const defaultModels = defaultProvider.models ?? [];
-  const hasDefaultModel = existingModels.some((model) => model.id === XIAOMI_DEFAULT_MODEL_ID);
-  const mergedModels =
-    existingModels.length > 0
-      ? hasDefaultModel
-        ? existingModels
-        : [...existingModels, ...defaultModels]
-      : defaultModels;
-  const { apiKey: existingApiKey, ...existingProviderRest } = (existingProvider ?? {}) as Record<
-    string,
-    unknown
-  > as { apiKey?: string };
-  const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
-  const normalizedApiKey = resolvedApiKey?.trim();
-  providers.xiaomi = {
-    ...existingProviderRest,
-    baseUrl: defaultProvider.baseUrl,
-    api: defaultProvider.api,
-    ...(normalizedApiKey ? { apiKey: normalizedApiKey } : {}),
-    models: mergedModels.length > 0 ? mergedModels : defaultProvider.models,
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-    models: {
-      mode: cfg.models?.mode ?? "merge",
-      providers,
-    },
-  };
-}
-
-export function applyXiaomiConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyXiaomiProviderConfig(cfg);
-  const existingModel = next.agents?.defaults?.model;
-  return {
-    ...next,
-    agents: {
-      ...next.agents,
-      defaults: {
-        ...next.agents?.defaults,
-        model: {
-          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
-            ? {
-                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
-              }
-            : undefined),
-          primary: XIAOMI_DEFAULT_MODEL_REF,
-        },
-      },
-    },
-  };
-}
-
-/**
- * Apply Venice provider configuration without changing the default model.
- * Registers Venice models and sets up the provider, but preserves existing model selection.
- */
-export function applyVeniceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[VENICE_DEFAULT_MODEL_REF] = {
-    ...models[VENICE_DEFAULT_MODEL_REF],
-    alias: models[VENICE_DEFAULT_MODEL_REF]?.alias ?? "Llama 3.3 70B",
-  };
-
-  const providers = { ...cfg.models?.providers };
-  const existingProvider = providers.venice;
-  const existingModels = Array.isArray(existingProvider?.models) ? existingProvider.models : [];
-  const veniceModels = VENICE_MODEL_CATALOG.map(buildVeniceModelDefinition);
-  const mergedModels = [
-    ...existingModels,
-    ...veniceModels.filter((model) => !existingModels.some((existing) => existing.id === model.id)),
-  ];
-  const { apiKey: existingApiKey, ...existingProviderRest } = (existingProvider ?? {}) as Record<
-    string,
-    unknown
-  > as { apiKey?: string };
-  const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
-  const normalizedApiKey = resolvedApiKey?.trim();
-  providers.venice = {
-    ...existingProviderRest,
-    baseUrl: VENICE_BASE_URL,
+    baseUrl,
     api: "openai-completions",
     ...(normalizedApiKey ? { apiKey: normalizedApiKey } : {}),
-    models: mergedModels.length > 0 ? mergedModels : veniceModels,
+    models: mergedModels.length > 0 ? mergedModels : privatemodeModels,
   };
 
   return {
@@ -466,11 +150,14 @@ export function applyVeniceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
 }
 
 /**
- * Apply Venice provider configuration AND set Venice as the default model.
- * Use this when Venice is the primary provider choice during onboarding.
+ * Apply Privatemode provider configuration AND set Privatemode as the default model.
+ * Use this when Privatemode is the primary provider choice during onboarding.
  */
-export function applyVeniceConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyVeniceProviderConfig(cfg);
+export function applyPrivatemodeConfig(
+  cfg: OpenClawConfig,
+  params?: { baseUrl?: string },
+): OpenClawConfig {
+  const next = applyPrivatemodeProviderConfig(cfg, params);
   const existingModel = next.agents?.defaults?.model;
   return {
     ...next,
@@ -484,7 +171,7 @@ export function applyVeniceConfig(cfg: OpenClawConfig): OpenClawConfig {
                 fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
               }
             : undefined),
-          primary: VENICE_DEFAULT_MODEL_REF,
+          primary: PRIVATEMODE_DEFAULT_MODEL_REF,
         },
       },
     },

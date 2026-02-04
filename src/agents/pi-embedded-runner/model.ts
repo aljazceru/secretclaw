@@ -79,11 +79,11 @@ export function resolveModel(
     );
     if (inlineMatch) {
       const normalized = normalizeModelCompat(inlineMatch as Model<Api>);
-      return {
-        model: normalized,
-        authStorage,
-        modelRegistry,
-      };
+      const mapleError = validateMapleProxy(normalized);
+      if (mapleError) {
+        return { error: mapleError, authStorage, modelRegistry };
+      }
+      return { model: normalized, authStorage, modelRegistry };
     }
     const providerCfg = providers[provider];
     if (providerCfg || modelId.startsWith("mock-")) {
@@ -99,6 +99,10 @@ export function resolveModel(
         contextWindow: providerCfg?.models?.[0]?.contextWindow ?? DEFAULT_CONTEXT_TOKENS,
         maxTokens: providerCfg?.models?.[0]?.maxTokens ?? DEFAULT_CONTEXT_TOKENS,
       } as Model<Api>);
+      const mapleError = validateMapleProxy(fallbackModel);
+      if (mapleError) {
+        return { error: mapleError, authStorage, modelRegistry };
+      }
       return { model: fallbackModel, authStorage, modelRegistry };
     }
     return {
@@ -107,5 +111,34 @@ export function resolveModel(
       modelRegistry,
     };
   }
-  return { model: normalizeModelCompat(model), authStorage, modelRegistry };
+  const normalized = normalizeModelCompat(model);
+  const mapleError = validateMapleProxy(normalized);
+  if (mapleError) {
+    return { error: mapleError, authStorage, modelRegistry };
+  }
+  return { model: normalized, authStorage, modelRegistry };
+}
+
+function isLocalProxyUrl(baseUrl?: string): boolean {
+  if (!baseUrl) {
+    return false;
+  }
+  try {
+    const parsed = new URL(baseUrl);
+    const host = parsed.hostname.toLowerCase();
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+}
+
+function validateMapleProxy(model: Model<Api>): string | null {
+  const provider = normalizeProviderId(model.provider);
+  if (provider !== "maple") {
+    return null;
+  }
+  if (!isLocalProxyUrl(model.baseUrl)) {
+    return 'Maple proxy must be local-only (use "http://127.0.0.1:8080/v1").';
+  }
+  return null;
 }
