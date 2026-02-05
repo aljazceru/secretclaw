@@ -5,6 +5,13 @@ services:
       HOME: /home/node
       TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      MAPLE_API_KEY: ${MAPLE_API_KEY}
+      PRIVATEMODE_API_KEY: ${PRIVATEMODE_API_KEY}
+      TINFOIL_API_KEY: ${TINFOIL_API_KEY}
+      MAPLE_PROXY_URL: ${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}
+      PRIVATEMODE_PROXY_URL: ${PRIVATEMODE_PROXY_URL}
+      TINFOIL_PROXY_URL: ${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}
+      OPENCLAW_LOCAL_PROXY_HOSTS: ${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
@@ -14,6 +21,8 @@ services:
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     init: true
     restart: unless-stopped
     command:
@@ -34,6 +43,13 @@ services:
       TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
       BROWSER: echo
+      MAPLE_API_KEY: ${MAPLE_API_KEY}
+      PRIVATEMODE_API_KEY: ${PRIVATEMODE_API_KEY}
+      TINFOIL_API_KEY: ${TINFOIL_API_KEY}
+      MAPLE_PROXY_URL: ${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}
+      PRIVATEMODE_PROXY_URL: ${PRIVATEMODE_PROXY_URL}
+      TINFOIL_PROXY_URL: ${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}
+      OPENCLAW_LOCAL_PROXY_HOSTS: ${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
@@ -44,3 +60,23 @@ services:
     tty: true
     init: true
     entrypoint: ["node", "dist/index.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  maple-proxy:
+    image: ${MAPLE_PROXY_IMAGE:-maple-proxy:local}
+    profiles: ["maple"]
+    environment:
+      MAPLE_API_KEY: ${MAPLE_API_KEY}
+    ports:
+      - "${MAPLE_PROXY_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  tinfoil-proxy:
+    image: ${TINFOIL_PROXY_IMAGE:-tinfoil-proxy:local}
+    profiles: ["tinfoil"]
+    environment:
+      TINFOIL_API_KEY: ${TINFOIL_API_KEY}
+    ports:
+      - "${TINFOIL_PROXY_PORT:-8081}:8080"
+    restart: unless-stopped

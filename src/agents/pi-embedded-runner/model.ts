@@ -1,4 +1,5 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
+import { isIP } from "node:net";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { ModelDefinitionConfig } from "../../config/types.js";
 import { resolveOpenClawAgentDir } from "../agent-paths.js";
@@ -119,6 +120,62 @@ export function resolveModel(
   return { model: normalized, authStorage, modelRegistry };
 }
 
+const DEFAULT_LOCAL_PROXY_HOSTS = new Set([
+  "localhost",
+  "127.0.0.1",
+  "::1",
+  "host.docker.internal",
+  "host.containers.internal",
+  "maple-proxy",
+  "privatemode-proxy",
+  "tinfoil-proxy",
+]);
+
+function resolveLocalProxyHosts(): Set<string> {
+  const extra = process.env.OPENCLAW_LOCAL_PROXY_HOSTS;
+  if (!extra?.trim()) {
+    return DEFAULT_LOCAL_PROXY_HOSTS;
+  }
+  const hosts = new Set(DEFAULT_LOCAL_PROXY_HOSTS);
+  for (const entry of extra.split(",")) {
+    const trimmed = entry.trim().toLowerCase();
+    if (trimmed) {
+      hosts.add(trimmed);
+    }
+  }
+  return hosts;
+}
+
+function isPrivateIp(host: string): boolean {
+  const ipType = isIP(host);
+  if (ipType === 4) {
+    const [a, b] = host.split(".").map((part) => Number(part));
+    if (a === 10 || a === 127) {
+      return true;
+    }
+    if (a === 169 && b === 254) {
+      return true;
+    }
+    if (a === 172 && b >= 16 && b <= 31) {
+      return true;
+    }
+    if (a === 192 && b === 168) {
+      return true;
+    }
+    return false;
+  }
+  if (ipType === 6) {
+    const normalized = host.toLowerCase();
+    return (
+      normalized === "::1" ||
+      normalized.startsWith("fd") ||
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fe80")
+    );
+  }
+  return false;
+}
+
 function isLocalProxyUrl(baseUrl?: string): boolean {
   if (!baseUrl) {
     return false;
@@ -126,7 +183,10 @@ function isLocalProxyUrl(baseUrl?: string): boolean {
   try {
     const parsed = new URL(baseUrl);
     const host = parsed.hostname.toLowerCase();
-    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+    if (resolveLocalProxyHosts().has(host)) {
+      return true;
+    }
+    return isPrivateIp(host);
   } catch {
     return false;
   }

@@ -12,6 +12,20 @@ import {
   PRIVATEMODE_MODEL_CATALOG,
 } from "../agents/privatemode-models.js";
 
+function resolveProxyBaseUrl(envVar: string, fallback: string): string {
+  const value = process.env[envVar];
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed || fallback;
+}
+
+function resolveMapleBaseUrl(): string {
+  return resolveProxyBaseUrl("MAPLE_PROXY_URL", MAPLE_DEFAULT_BASE_URL);
+}
+
+function resolvePrivatemodeBaseUrl(): string {
+  return resolveProxyBaseUrl("PRIVATEMODE_PROXY_URL", PRIVATEMODE_DEFAULT_BASE_URL);
+}
+
 /**
  * Apply Maple provider configuration without changing the default model.
  * Registers Maple models and sets up the provider, but preserves existing model selection.
@@ -40,7 +54,7 @@ export function applyMapleProviderConfig(
   > as { apiKey?: string };
   const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
   const normalizedApiKey = resolvedApiKey?.trim();
-  const baseUrl = params?.baseUrl ?? MAPLE_DEFAULT_BASE_URL;
+  const baseUrl = params?.baseUrl ?? resolveMapleBaseUrl();
   providers.maple = {
     ...existingProviderRest,
     baseUrl,
@@ -124,7 +138,7 @@ export function applyPrivatemodeProviderConfig(
   > as { apiKey?: string };
   const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
   const normalizedApiKey = resolvedApiKey?.trim();
-  const baseUrl = params?.baseUrl ?? PRIVATEMODE_DEFAULT_BASE_URL;
+  const baseUrl = params?.baseUrl ?? resolvePrivatemodeBaseUrl();
   providers.privatemode = {
     ...existingProviderRest,
     baseUrl,

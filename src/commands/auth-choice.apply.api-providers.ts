@@ -1,3 +1,4 @@
+import { isIP } from "node:net";
 import type { ApplyAuthChoiceParams, ApplyAuthChoiceResult } from "./auth-choice.apply.js";
 import { resolveEnvApiKey } from "../agents/model-auth.js";
 import {
@@ -18,14 +19,78 @@ import {
   setMapleApiKey,
 } from "./onboard-auth.js";
 
-const MAPLE_DEFAULT_PROXY_URL = "http://127.0.0.1:8080/v1";
-const PRIVATEMODE_DEFAULT_PROXY_URL = "http://127.0.0.1:8080/v1";
+const MAPLE_DEFAULT_PROXY_URL_FALLBACK = "http://127.0.0.1:8080/v1";
+const PRIVATEMODE_DEFAULT_PROXY_URL_FALLBACK = "http://127.0.0.1:8080/v1";
+const DEFAULT_LOCAL_PROXY_HOSTS = new Set([
+  "localhost",
+  "127.0.0.1",
+  "::1",
+  "host.docker.internal",
+  "host.containers.internal",
+  "maple-proxy",
+  "privatemode-proxy",
+  "tinfoil-proxy",
+]);
+
+function resolveProxyDefaultUrl(envVar: string, fallback: string): string {
+  const value = process.env[envVar];
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed || fallback;
+}
+
+function resolveLocalProxyHosts(): Set<string> {
+  const extra = process.env.OPENCLAW_LOCAL_PROXY_HOSTS;
+  if (!extra?.trim()) {
+    return DEFAULT_LOCAL_PROXY_HOSTS;
+  }
+  const hosts = new Set(DEFAULT_LOCAL_PROXY_HOSTS);
+  for (const entry of extra.split(",")) {
+    const trimmed = entry.trim().toLowerCase();
+    if (trimmed) {
+      hosts.add(trimmed);
+    }
+  }
+  return hosts;
+}
+
+function isPrivateIp(host: string): boolean {
+  const ipType = isIP(host);
+  if (ipType === 4) {
+    const [a, b] = host.split(".").map((part) => Number(part));
+    if (a === 10 || a === 127) {
+      return true;
+    }
+    if (a === 169 && b === 254) {
+      return true;
+    }
+    if (a === 172 && b >= 16 && b <= 31) {
+      return true;
+    }
+    if (a === 192 && b === 168) {
+      return true;
+    }
+    return false;
+  }
+  if (ipType === 6) {
+    const normalized = host.toLowerCase();
+    return (
+      normalized === "::1" ||
+      normalized.startsWith("fd") ||
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fe80")
+    );
+  }
+  return false;
+}
 
 function isLocalProxyUrl(value: string): boolean {
   try {
     const parsed = new URL(value);
     const host = parsed.hostname.toLowerCase();
-    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+    if (resolveLocalProxyHosts().has(host)) {
+      return true;
+    }
+    return isPrivateIp(host);
   } catch {
     return false;
   }
@@ -57,13 +122,18 @@ export async function applyAuthChoiceApiProviders(
       hasCredential = true;
     }
 
+    const mapleDefaultProxyUrl = resolveProxyDefaultUrl(
+      "MAPLE_PROXY_URL",
+      MAPLE_DEFAULT_PROXY_URL_FALLBACK,
+    );
+
     if (!hasCredential) {
       await params.prompter.note(
         [
           "Maple AI provides TEE-based private inference with end-to-end encryption.",
           "Download the Maple desktop app at: https://trymaple.ai/downloads",
           "Run the app or Docker container, then configure the local proxy URL.",
-          "Default URL: http://127.0.0.1:8080/v1",
+          `Default URL: ${mapleDefaultProxyUrl}`,
           "MAPLE_API_KEY is required in production only; local proxy accepts any token.",
           "Maple supports streaming responses only.",
           "Generate your API key within the Maple app.",
@@ -93,7 +163,7 @@ export async function applyAuthChoiceApiProviders(
 
     const customUrl = await params.prompter.text({
       message: "Enter Maple proxy URL (press Enter for default)",
-      placeholder: MAPLE_DEFAULT_PROXY_URL,
+      placeholder: mapleDefaultProxyUrl,
     });
     if (customUrl && String(customUrl).trim()) {
       const trimmed = String(customUrl).trim();
@@ -101,7 +171,7 @@ export async function applyAuthChoiceApiProviders(
         baseUrl = trimmed;
       } else {
         await params.prompter.note(
-          "Maple proxy must be local-only (use http://127.0.0.1:8080/v1).",
+          "Maple proxy must be local-only (localhost, private IP, or docker service name).",
           "Maple AI",
         );
       }
@@ -138,13 +208,18 @@ export async function applyAuthChoiceApiProviders(
       hasCredential = true;
     }
 
+    const privatemodeDefaultProxyUrl = resolveProxyDefaultUrl(
+      "PRIVATEMODE_PROXY_URL",
+      PRIVATEMODE_DEFAULT_PROXY_URL_FALLBACK,
+    );
+
     if (!hasCredential) {
       await params.prompter.note(
         [
           "Privatemode provides attestation-enforcing proxy for TEE-verified inference.",
           "Deploy the proxy: docker run -p 8080:8080 ghcr.io/edgelesssys/privatemode/privatemode-proxy:latest",
           "Configure the proxy with your API key, then point SecretClaw at the local endpoint.",
-          "Default URL: http://127.0.0.1:8080/v1",
+          `Default URL: ${privatemodeDefaultProxyUrl}`,
           "PRIVATEMODE_API_KEY is optional for local proxy; required in production.",
           "The proxy verifies attestation and encrypts all traffic end-to-end.",
         ].join("\n"),
@@ -173,7 +248,7 @@ export async function applyAuthChoiceApiProviders(
 
     const customUrl = await params.prompter.text({
       message: "Enter Privatemode proxy URL (press Enter for default)",
-      placeholder: PRIVATEMODE_DEFAULT_PROXY_URL,
+      placeholder: privatemodeDefaultProxyUrl,
     });
     if (customUrl && String(customUrl).trim()) {
       const trimmed = String(customUrl).trim();
@@ -181,7 +256,7 @@ export async function applyAuthChoiceApiProviders(
         baseUrl = trimmed;
       } else {
         await params.prompter.note(
-          "Privatemode proxy must be local-only (use http://127.0.0.1:8080/v1).",
+          "Privatemode proxy must be local-only (localhost, private IP, or docker service name).",
           "Privatemode",
         );
       }

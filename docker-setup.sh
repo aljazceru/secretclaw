@@ -36,6 +36,14 @@ export OPENCLAW_IMAGE="$IMAGE_NAME"
 export OPENCLAW_DOCKER_APT_PACKAGES="${OPENCLAW_DOCKER_APT_PACKAGES:-}"
 export OPENCLAW_EXTRA_MOUNTS="$EXTRA_MOUNTS"
 export OPENCLAW_HOME_VOLUME="$HOME_VOLUME_NAME"
+export MAPLE_PROXY_IMAGE="${MAPLE_PROXY_IMAGE:-maple-proxy:local}"
+export MAPLE_PROXY_PORT="${MAPLE_PROXY_PORT:-8080}"
+export MAPLE_PROXY_URL="${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}"
+export PRIVATEMODE_PROXY_URL="${PRIVATEMODE_PROXY_URL:-}"
+export TINFOIL_PROXY_IMAGE="${TINFOIL_PROXY_IMAGE:-tinfoil-proxy:local}"
+export TINFOIL_PROXY_PORT="${TINFOIL_PROXY_PORT:-8081}"
+export TINFOIL_PROXY_URL="${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}"
+export OPENCLAW_LOCAL_PROXY_HOSTS="${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}"
 
 if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
   if command -v openssl >/dev/null 2>&1; then
@@ -168,7 +176,18 @@ upsert_env "$ENV_FILE" \
   OPENCLAW_IMAGE \
   OPENCLAW_EXTRA_MOUNTS \
   OPENCLAW_HOME_VOLUME \
-  OPENCLAW_DOCKER_APT_PACKAGES
+  OPENCLAW_DOCKER_APT_PACKAGES \
+  MAPLE_API_KEY \
+  PRIVATEMODE_API_KEY \
+  TINFOIL_API_KEY \
+  MAPLE_PROXY_IMAGE \
+  MAPLE_PROXY_PORT \
+  MAPLE_PROXY_URL \
+  PRIVATEMODE_PROXY_URL \
+  TINFOIL_PROXY_IMAGE \
+  TINFOIL_PROXY_PORT \
+  TINFOIL_PROXY_URL \
+  OPENCLAW_LOCAL_PROXY_HOSTS
 
 echo "==> Building Docker image: $IMAGE_NAME"
 docker build \
@@ -196,6 +215,10 @@ echo "Telegram (bot token):"
 echo "  ${COMPOSE_HINT} run --rm openclaw-cli channels add --channel telegram --token <token>"
 echo "Discord (bot token):"
 echo "  ${COMPOSE_HINT} run --rm openclaw-cli channels add --channel discord --token <token>"
+echo ""
+echo "TEE proxies (optional):"
+echo "  Maple: set MAPLE_PROXY_IMAGE, then ${COMPOSE_HINT} --profile maple up -d maple-proxy"
+echo "  Tinfoil: set TINFOIL_PROXY_IMAGE, then ${COMPOSE_HINT} --profile tinfoil up -d tinfoil-proxy"
 echo "Docs: https://docs.openclaw.ai/channels"
 
 echo ""

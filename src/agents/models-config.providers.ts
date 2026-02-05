@@ -39,6 +39,20 @@ interface OllamaTagsResponse {
   models: OllamaModel[];
 }
 
+function resolveProxyBaseUrl(envVar: string, fallback: string): string {
+  const value = process.env[envVar];
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed || fallback;
+}
+
+function resolveMapleBaseUrl(): string {
+  return resolveProxyBaseUrl("MAPLE_PROXY_URL", MAPLE_DEFAULT_BASE_URL);
+}
+
+function resolvePrivatemodeBaseUrl(): string {
+  return resolveProxyBaseUrl("PRIVATEMODE_PROXY_URL", PRIVATEMODE_DEFAULT_BASE_URL);
+}
+
 async function discoverOllamaModels(): Promise<ModelDefinitionConfig[]> {
   // Skip Ollama discovery in test environments
   if (process.env.VITEST || process.env.NODE_ENV === "test") {
@@ -209,18 +223,20 @@ export function normalizeProviders(params: {
 }
 
 async function buildMapleProvider(params?: { apiKey?: string }): Promise<ProviderConfig> {
-  const models = await discoverMapleModels({ apiKey: params?.apiKey });
+  const baseUrl = resolveMapleBaseUrl();
+  const models = await discoverMapleModels({ apiKey: params?.apiKey, baseUrl });
   return {
-    baseUrl: MAPLE_DEFAULT_BASE_URL,
+    baseUrl,
     api: "openai-completions",
     models,
   };
 }
 
 async function buildPrivatemodeProvider(params?: { apiKey?: string }): Promise<ProviderConfig> {
-  const models = await discoverPrivatemodeModels({ apiKey: params?.apiKey });
+  const baseUrl = resolvePrivatemodeBaseUrl();
+  const models = await discoverPrivatemodeModels({ apiKey: params?.apiKey, baseUrl });
   return {
-    baseUrl: PRIVATEMODE_DEFAULT_BASE_URL,
+    baseUrl,
     api: "openai-completions",
     models,
   };
