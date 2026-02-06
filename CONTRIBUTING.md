@@ -1,12 +1,12 @@
-# Contributing to OpenClaw
+# Contributing to SecretClaw
 
 Welcome to the lobster tank! 🦞
 
 ## Quick Links
 
-- **GitHub:** https://github.com/openclaw/openclaw
+- **GitHub:** https://github.com/secretclaw/secretclaw
 - **Discord:** https://discord.gg/qkhbAGHRBT
-- **X/Twitter:** [@steipete](https://x.com/steipete) / [@openclaw](https://x.com/openclaw)
+- **X/Twitter:** [@steipete](https://x.com/steipete) / [@secretclaw](https://x.com/secretclaw)
 
 ## Maintainers
 
@@ -25,12 +25,12 @@ Welcome to the lobster tank! 🦞
 ## How to Contribute
 
 1. **Bugs & small fixes** → Open a PR!
-2. **New features / architecture** → Start a [GitHub Discussion](https://github.com/openclaw/openclaw/discussions) or ask in Discord first
+2. **New features / architecture** → Start a [GitHub Discussion](https://github.com/secretclaw/secretclaw/discussions) or ask in Discord first
 3. **Questions** → Discord #setup-help
 
 ## Before You PR
 
-- Test locally with your OpenClaw instance
+- Test locally with your SecretClaw instance
 - Run tests: `pnpm build && pnpm check && pnpm test`
 - Keep PRs focused (one thing per PR)
 - Describe what & why
@@ -72,4 +72,4 @@ We are currently prioritizing:
 - **Skills**: Expanding the library of bundled skills and improving the Skill Creation developer experience.
 - **Performance**: Optimizing token usage and compaction logic.
 
-Check the [GitHub Issues](https://github.com/openclaw/openclaw/issues) for "good first issue" labels!
+Check the [GitHub Issues](https://github.com/secretclaw/secretclaw/issues) for "good first issue" labels!

@@ -1,26 +1,26 @@
 services:
-  openclaw-gateway:
-    image: ${OPENCLAW_IMAGE:-openclaw:local}
+  secretclaw-gateway:
+    image: ${SECRETCLAW_IMAGE:-secretclaw:local}
     environment:
       HOME: /home/node
       TERM: xterm-256color
-      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      SECRETCLAW_GATEWAY_TOKEN: ${SECRETCLAW_GATEWAY_TOKEN}
       MAPLE_API_KEY: ${MAPLE_API_KEY}
       PRIVATEMODE_API_KEY: ${PRIVATEMODE_API_KEY}
       TINFOIL_API_KEY: ${TINFOIL_API_KEY}
       MAPLE_PROXY_URL: ${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}
       PRIVATEMODE_PROXY_URL: ${PRIVATEMODE_PROXY_URL}
       TINFOIL_PROXY_URL: ${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}
-      OPENCLAW_LOCAL_PROXY_HOSTS: ${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
+      SECRETCLAW_LOCAL_PROXY_HOSTS: ${SECRETCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
     volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - ${SECRETCLAW_CONFIG_DIR}:/home/node/.secretclaw
+      - ${SECRETCLAW_WORKSPACE_DIR}:/home/node/.secretclaw/workspace
     ports:
-      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
-      - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+      - "${SECRETCLAW_GATEWAY_PORT:-18789}:18789"
+      - "${SECRETCLAW_BRIDGE_PORT:-18790}:18790"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     init: true
@@ -31,17 +31,17 @@ services:
         "dist/index.js",
         "gateway",
         "--bind",
-        "${OPENCLAW_GATEWAY_BIND:-lan}",
+        "${SECRETCLAW_GATEWAY_BIND:-lan}",
         "--port",
         "18789",
       ]
 
-  openclaw-cli:
-    image: ${OPENCLAW_IMAGE:-openclaw:local}
+  secretclaw-cli:
+    image: ${SECRETCLAW_IMAGE:-secretclaw:local}
     environment:
       HOME: /home/node
       TERM: xterm-256color
-      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      SECRETCLAW_GATEWAY_TOKEN: ${SECRETCLAW_GATEWAY_TOKEN}
       BROWSER: echo
       MAPLE_API_KEY: ${MAPLE_API_KEY}
       PRIVATEMODE_API_KEY: ${PRIVATEMODE_API_KEY}
@@ -49,13 +49,13 @@ services:
       MAPLE_PROXY_URL: ${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}
       PRIVATEMODE_PROXY_URL: ${PRIVATEMODE_PROXY_URL}
       TINFOIL_PROXY_URL: ${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}
-      OPENCLAW_LOCAL_PROXY_HOSTS: ${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
+      SECRETCLAW_LOCAL_PROXY_HOSTS: ${SECRETCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
     volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - ${SECRETCLAW_CONFIG_DIR}:/home/node/.secretclaw
+      - ${SECRETCLAW_WORKSPACE_DIR}:/home/node/.secretclaw/workspace
     stdin_open: true
     tty: true
     init: true

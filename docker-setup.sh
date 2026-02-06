@@ -4,9 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker-compose.yml"
 EXTRA_COMPOSE_FILE="$ROOT_DIR/docker-compose.extra.yml"
-IMAGE_NAME="${OPENCLAW_IMAGE:-openclaw:local}"
-EXTRA_MOUNTS="${OPENCLAW_EXTRA_MOUNTS:-}"
-HOME_VOLUME_NAME="${OPENCLAW_HOME_VOLUME:-}"
+IMAGE_NAME="${SECRETCLAW_IMAGE:-${OPENCLAW_IMAGE:-secretclaw:local}}"
+EXTRA_MOUNTS="${SECRETCLAW_EXTRA_MOUNTS:-${OPENCLAW_EXTRA_MOUNTS:-}}"
+HOME_VOLUME_NAME="${SECRETCLAW_HOME_VOLUME:-${OPENCLAW_HOME_VOLUME:-}}"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -21,21 +21,21 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$HOME/.openclaw}"
-OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$HOME/.openclaw/workspace}"
+SECRETCLAW_CONFIG_DIR="${SECRETCLAW_CONFIG_DIR:-${OPENCLAW_CONFIG_DIR:-$HOME/.secretclaw}}"
+SECRETCLAW_WORKSPACE_DIR="${SECRETCLAW_WORKSPACE_DIR:-${OPENCLAW_WORKSPACE_DIR:-$HOME/.secretclaw/workspace}}"
 
-mkdir -p "$OPENCLAW_CONFIG_DIR"
-mkdir -p "$OPENCLAW_WORKSPACE_DIR"
+mkdir -p "$SECRETCLAW_CONFIG_DIR"
+mkdir -p "$SECRETCLAW_WORKSPACE_DIR"
 
-export OPENCLAW_CONFIG_DIR
-export OPENCLAW_WORKSPACE_DIR
-export OPENCLAW_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
-export OPENCLAW_BRIDGE_PORT="${OPENCLAW_BRIDGE_PORT:-18790}"
-export OPENCLAW_GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-lan}"
-export OPENCLAW_IMAGE="$IMAGE_NAME"
-export OPENCLAW_DOCKER_APT_PACKAGES="${OPENCLAW_DOCKER_APT_PACKAGES:-}"
-export OPENCLAW_EXTRA_MOUNTS="$EXTRA_MOUNTS"
-export OPENCLAW_HOME_VOLUME="$HOME_VOLUME_NAME"
+export SECRETCLAW_CONFIG_DIR
+export SECRETCLAW_WORKSPACE_DIR
+export SECRETCLAW_GATEWAY_PORT="${SECRETCLAW_GATEWAY_PORT:-${OPENCLAW_GATEWAY_PORT:-18789}}"
+export SECRETCLAW_BRIDGE_PORT="${SECRETCLAW_BRIDGE_PORT:-${OPENCLAW_BRIDGE_PORT:-18790}}"
+export SECRETCLAW_GATEWAY_BIND="${SECRETCLAW_GATEWAY_BIND:-${OPENCLAW_GATEWAY_BIND:-lan}}"
+export SECRETCLAW_IMAGE="$IMAGE_NAME"
+export SECRETCLAW_DOCKER_APT_PACKAGES="${SECRETCLAW_DOCKER_APT_PACKAGES:-${OPENCLAW_DOCKER_APT_PACKAGES:-}}"
+export SECRETCLAW_EXTRA_MOUNTS="$EXTRA_MOUNTS"
+export SECRETCLAW_HOME_VOLUME="$HOME_VOLUME_NAME"
 export MAPLE_PROXY_IMAGE="${MAPLE_PROXY_IMAGE:-maple-proxy:local}"
 export MAPLE_PROXY_PORT="${MAPLE_PROXY_PORT:-8080}"
 export MAPLE_PROXY_URL="${MAPLE_PROXY_URL:-http://maple-proxy:8080/v1}"
@@ -43,20 +43,21 @@ export PRIVATEMODE_PROXY_URL="${PRIVATEMODE_PROXY_URL:-}"
 export TINFOIL_PROXY_IMAGE="${TINFOIL_PROXY_IMAGE:-tinfoil-proxy:local}"
 export TINFOIL_PROXY_PORT="${TINFOIL_PROXY_PORT:-8081}"
 export TINFOIL_PROXY_URL="${TINFOIL_PROXY_URL:-http://tinfoil-proxy:8080/v1}"
-export OPENCLAW_LOCAL_PROXY_HOSTS="${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}"
+export SECRETCLAW_LOCAL_PROXY_HOSTS="${SECRETCLAW_LOCAL_PROXY_HOSTS:-${OPENCLAW_LOCAL_PROXY_HOSTS:-maple-proxy,tinfoil-proxy,host.docker.internal,host.containers.internal}}"
 
-if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
+SECRETCLAW_GATEWAY_TOKEN="${SECRETCLAW_GATEWAY_TOKEN:-${OPENCLAW_GATEWAY_TOKEN:-}}"
+if [[ -z "${SECRETCLAW_GATEWAY_TOKEN:-}" ]]; then
   if command -v openssl >/dev/null 2>&1; then
-    OPENCLAW_GATEWAY_TOKEN="$(openssl rand -hex 32)"
+    SECRETCLAW_GATEWAY_TOKEN="$(openssl rand -hex 32)"
   else
-    OPENCLAW_GATEWAY_TOKEN="$(python3 - <<'PY'
+    SECRETCLAW_GATEWAY_TOKEN="$(python3 - <<'PY'
 import secrets
 print(secrets.token_hex(32))
 PY
 )"
   fi
 fi
-export OPENCLAW_GATEWAY_TOKEN
+export SECRETCLAW_GATEWAY_TOKEN
 
 COMPOSE_FILES=("$COMPOSE_FILE")
 COMPOSE_ARGS=()
@@ -69,14 +70,14 @@ write_extra_compose() {
 
   cat >"$EXTRA_COMPOSE_FILE" <<'YAML'
 services:
-  openclaw-gateway:
+  secretclaw-gateway:
     volumes:
 YAML
 
   if [[ -n "$home_volume" ]]; then
     printf '      - %s:/home/node\n' "$home_volume" >>"$EXTRA_COMPOSE_FILE"
-    printf '      - %s:/home/node/.openclaw\n' "$OPENCLAW_CONFIG_DIR" >>"$EXTRA_COMPOSE_FILE"
-    printf '      - %s:/home/node/.openclaw/workspace\n' "$OPENCLAW_WORKSPACE_DIR" >>"$EXTRA_COMPOSE_FILE"
+    printf '      - %s:/home/node/.secretclaw\n' "$SECRETCLAW_CONFIG_DIR" >>"$EXTRA_COMPOSE_FILE"
+    printf '      - %s:/home/node/.secretclaw/workspace\n' "$SECRETCLAW_WORKSPACE_DIR" >>"$EXTRA_COMPOSE_FILE"
   fi
 
   for mount in "${mounts[@]}"; do
@@ -84,14 +85,14 @@ YAML
   done
 
   cat >>"$EXTRA_COMPOSE_FILE" <<'YAML'
-  openclaw-cli:
+  secretclaw-cli:
     volumes:
 YAML
 
   if [[ -n "$home_volume" ]]; then
     printf '      - %s:/home/node\n' "$home_volume" >>"$EXTRA_COMPOSE_FILE"
-    printf '      - %s:/home/node/.openclaw\n' "$OPENCLAW_CONFIG_DIR" >>"$EXTRA_COMPOSE_FILE"
-    printf '      - %s:/home/node/.openclaw/workspace\n' "$OPENCLAW_WORKSPACE_DIR" >>"$EXTRA_COMPOSE_FILE"
+    printf '      - %s:/home/node/.secretclaw\n' "$SECRETCLAW_CONFIG_DIR" >>"$EXTRA_COMPOSE_FILE"
+    printf '      - %s:/home/node/.secretclaw/workspace\n' "$SECRETCLAW_WORKSPACE_DIR" >>"$EXTRA_COMPOSE_FILE"
   fi
 
   for mount in "${mounts[@]}"; do
@@ -167,16 +168,16 @@ upsert_env() {
 }
 
 upsert_env "$ENV_FILE" \
-  OPENCLAW_CONFIG_DIR \
-  OPENCLAW_WORKSPACE_DIR \
-  OPENCLAW_GATEWAY_PORT \
-  OPENCLAW_BRIDGE_PORT \
-  OPENCLAW_GATEWAY_BIND \
-  OPENCLAW_GATEWAY_TOKEN \
-  OPENCLAW_IMAGE \
-  OPENCLAW_EXTRA_MOUNTS \
-  OPENCLAW_HOME_VOLUME \
-  OPENCLAW_DOCKER_APT_PACKAGES \
+  SECRETCLAW_CONFIG_DIR \
+  SECRETCLAW_WORKSPACE_DIR \
+  SECRETCLAW_GATEWAY_PORT \
+  SECRETCLAW_BRIDGE_PORT \
+  SECRETCLAW_GATEWAY_BIND \
+  SECRETCLAW_GATEWAY_TOKEN \
+  SECRETCLAW_IMAGE \
+  SECRETCLAW_EXTRA_MOUNTS \
+  SECRETCLAW_HOME_VOLUME \
+  SECRETCLAW_DOCKER_APT_PACKAGES \
   MAPLE_API_KEY \
   PRIVATEMODE_API_KEY \
   TINFOIL_API_KEY \
@@ -187,11 +188,11 @@ upsert_env "$ENV_FILE" \
   TINFOIL_PROXY_IMAGE \
   TINFOIL_PROXY_PORT \
   TINFOIL_PROXY_URL \
-  OPENCLAW_LOCAL_PROXY_HOSTS
+  SECRETCLAW_LOCAL_PROXY_HOSTS
 
 echo "==> Building Docker image: $IMAGE_NAME"
 docker build \
-  --build-arg "OPENCLAW_DOCKER_APT_PACKAGES=${OPENCLAW_DOCKER_APT_PACKAGES}" \
+  --build-arg "SECRETCLAW_DOCKER_APT_PACKAGES=${SECRETCLAW_DOCKER_APT_PACKAGES}" \
   -t "$IMAGE_NAME" \
   -f "$ROOT_DIR/Dockerfile" \
   "$ROOT_DIR"
@@ -201,20 +202,20 @@ echo "==> Onboarding (interactive)"
 echo "When prompted:"
 echo "  - Gateway bind: lan"
 echo "  - Gateway auth: token"
-echo "  - Gateway token: $OPENCLAW_GATEWAY_TOKEN"
+echo "  - Gateway token: $SECRETCLAW_GATEWAY_TOKEN"
 echo "  - Tailscale exposure: Off"
 echo "  - Install Gateway daemon: No"
 echo ""
-docker compose "${COMPOSE_ARGS[@]}" run --rm openclaw-cli onboard --no-install-daemon
+docker compose "${COMPOSE_ARGS[@]}" run --rm secretclaw-cli onboard --no-install-daemon
 
 echo ""
 echo "==> Provider setup (optional)"
 echo "WhatsApp (QR):"
-echo "  ${COMPOSE_HINT} run --rm openclaw-cli channels login"
+echo "  ${COMPOSE_HINT} run --rm secretclaw-cli channels login"
 echo "Telegram (bot token):"
-echo "  ${COMPOSE_HINT} run --rm openclaw-cli channels add --channel telegram --token <token>"
+echo "  ${COMPOSE_HINT} run --rm secretclaw-cli channels add --channel telegram --token <token>"
 echo "Discord (bot token):"
-echo "  ${COMPOSE_HINT} run --rm openclaw-cli channels add --channel discord --token <token>"
+echo "  ${COMPOSE_HINT} run --rm secretclaw-cli channels add --channel discord --token <token>"
 echo ""
 echo "TEE proxies (optional):"
 echo "  Maple: set MAPLE_PROXY_IMAGE, then ${COMPOSE_HINT} --profile maple up -d maple-proxy"
@@ -223,15 +224,15 @@ echo "Docs: https://docs.openclaw.ai/channels"
 
 echo ""
 echo "==> Starting gateway"
-docker compose "${COMPOSE_ARGS[@]}" up -d openclaw-gateway
+docker compose "${COMPOSE_ARGS[@]}" up -d secretclaw-gateway
 
 echo ""
 echo "Gateway running with host port mapping."
 echo "Access from tailnet devices via the host's tailnet IP."
-echo "Config: $OPENCLAW_CONFIG_DIR"
-echo "Workspace: $OPENCLAW_WORKSPACE_DIR"
-echo "Token: $OPENCLAW_GATEWAY_TOKEN"
+echo "Config: $SECRETCLAW_CONFIG_DIR"
+echo "Workspace: $SECRETCLAW_WORKSPACE_DIR"
+echo "Token: $SECRETCLAW_GATEWAY_TOKEN"
 echo ""
 echo "Commands:"
-echo "  ${COMPOSE_HINT} logs -f openclaw-gateway"
-echo "  ${COMPOSE_HINT} exec openclaw-gateway node dist/index.js health --token \"$OPENCLAW_GATEWAY_TOKEN\""
+echo "  ${COMPOSE_HINT} logs -f secretclaw-gateway"
+echo "  ${COMPOSE_HINT} exec secretclaw-gateway node dist/index.js health --token \"$SECRETCLAW_GATEWAY_TOKEN\""
