@@ -39,15 +39,15 @@ export function registerStatusHealthSessionsCommands(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw status", "Show channel health + session summary."],
-          ["openclaw status --all", "Full diagnosis (read-only)."],
-          ["openclaw status --json", "Machine-readable output."],
-          ["openclaw status --usage", "Show model provider usage/quota snapshots."],
+          ["secretclaw status", "Show channel health + session summary."],
+          ["secretclaw status --all", "Full diagnosis (read-only)."],
+          ["secretclaw status --json", "Machine-readable output."],
+          ["secretclaw status --usage", "Show model provider usage/quota snapshots."],
           [
-            "openclaw status --deep",
+            "secretclaw status --deep",
             "Run channel probes (WA + Telegram + Discord + Slack + Signal).",
           ],
-          ["openclaw status --deep --timeout 5000", "Tighten probe timeout."],
+          ["secretclaw status --deep --timeout 5000", "Tighten probe timeout."],
         ])}`,
     )
     .addHelpText(
@@ -119,10 +119,10 @@ export function registerStatusHealthSessionsCommands(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw sessions", "List all sessions."],
-          ["openclaw sessions --active 120", "Only last 2 hours."],
-          ["openclaw sessions --json", "Machine-readable output."],
-          ["openclaw sessions --store ./tmp/sessions.json", "Use a specific session store."],
+          ["secretclaw sessions", "List all sessions."],
+          ["secretclaw sessions --active 120", "Only last 2 hours."],
+          ["secretclaw sessions --json", "Machine-readable output."],
+          ["secretclaw sessions --store ./tmp/sessions.json", "Use a specific session store."],
         ])}\n\n${theme.muted(
           "Shows token usage per session when the agent reports it; set agents.defaults.contextTokens to cap the window and show %.",
         )}`,

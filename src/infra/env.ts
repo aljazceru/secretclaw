@@ -43,10 +43,28 @@ export function normalizeZaiEnv(): void {
   }
 }
 
+/**
+ * Migrate legacy OPENCLAW_* env vars to SECRETCLAW_*.
+ * If a SECRETCLAW_* var is not set but the corresponding OPENCLAW_* var is,
+ * copy the value so the rest of the codebase only needs to check SECRETCLAW_*.
+ */
+function migrateOpenclawEnv(): void {
+  const PREFIX_OLD = "OPENCLAW_";
+  const PREFIX_NEW = "SECRETCLAW_";
+  for (const key of Object.keys(process.env)) {
+    if (!key.startsWith(PREFIX_OLD)) continue;
+    const newKey = PREFIX_NEW + key.slice(PREFIX_OLD.length);
+    if (!process.env[newKey]?.trim() && process.env[key]?.trim()) {
+      process.env[newKey] = process.env[key];
+    }
+  }
+}
+
 export function isTruthyEnvValue(value?: string): boolean {
   return parseBooleanValue(value) === true;
 }
 
 export function normalizeEnv(): void {
+  migrateOpenclawEnv();
   normalizeZaiEnv();
 }

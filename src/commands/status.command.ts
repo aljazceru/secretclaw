@@ -377,7 +377,7 @@ export async function statusCommand(
     },
   ];
 
-  runtime.log(theme.heading("OpenClaw status"));
+  runtime.log(theme.heading("SecretClaw status"));
   runtime.log("");
   runtime.log(theme.heading("Overview"));
   runtime.log(
@@ -434,8 +434,8 @@ export async function statusCommand(
       runtime.log(theme.muted(`… +${sorted.length - shown.length} more`));
     }
   }
-  runtime.log(theme.muted(`Full report: ${formatCliCommand("openclaw security audit")}`));
-  runtime.log(theme.muted(`Deep probe: ${formatCliCommand("openclaw security audit --deep")}`));
+  runtime.log(theme.muted(`Full report: ${formatCliCommand("secretclaw security audit")}`));
+  runtime.log(theme.muted(`Deep probe: ${formatCliCommand("secretclaw security audit --deep")}`));
 
   runtime.log("");
   runtime.log(theme.heading("Channels"));
@@ -608,11 +608,11 @@ export async function statusCommand(
     runtime.log("");
   }
   runtime.log("Next steps:");
-  runtime.log(`  Need to share?      ${formatCliCommand("openclaw status --all")}`);
-  runtime.log(`  Need to debug live? ${formatCliCommand("openclaw logs --follow")}`);
+  runtime.log(`  Need to share?      ${formatCliCommand("secretclaw status --all")}`);
+  runtime.log(`  Need to debug live? ${formatCliCommand("secretclaw logs --follow")}`);
   if (gatewayReachable) {
-    runtime.log(`  Need to test channels? ${formatCliCommand("openclaw status --deep")}`);
+    runtime.log(`  Need to test channels? ${formatCliCommand("secretclaw status --deep")}`);
   } else {
-    runtime.log(`  Fix reachability first: ${formatCliCommand("openclaw gateway probe")}`);
+    runtime.log(`  Fix reachability first: ${formatCliCommand("secretclaw gateway probe")}`);
   }
 }

@@ -1,7 +1,7 @@
-import type { OpenClawPluginApi } from "../../src/plugins/types.js";
+import type { SecretClawPluginApi } from "../../src/plugins/types.js";
 import { createLobsterTool } from "./src/lobster-tool.js";
 
-export default function register(api: OpenClawPluginApi) {
+export default function register(api: SecretClawPluginApi) {
   api.registerTool(
     (ctx) => {
       if (ctx.sandboxed) {

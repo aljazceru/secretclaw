@@ -1,12 +1,12 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 
 export type PluginEnableResult = {
-  config: OpenClawConfig;
+  config: SecretClawConfig;
   enabled: boolean;
   reason?: string;
 };
 
-function ensureAllowlisted(cfg: OpenClawConfig, pluginId: string): OpenClawConfig {
+function ensureAllowlisted(cfg: SecretClawConfig, pluginId: string): SecretClawConfig {
   const allow = cfg.plugins?.allow;
   if (!Array.isArray(allow) || allow.includes(pluginId)) {
     return cfg;
@@ -20,7 +20,7 @@ function ensureAllowlisted(cfg: OpenClawConfig, pluginId: string): OpenClawConfi
   };
 }
 
-export function enablePluginInConfig(cfg: OpenClawConfig, pluginId: string): PluginEnableResult {
+export function enablePluginInConfig(cfg: SecretClawConfig, pluginId: string): PluginEnableResult {
   if (cfg.plugins?.enabled === false) {
     return { config: cfg, enabled: false, reason: "plugins disabled" };
   }
@@ -35,7 +35,7 @@ export function enablePluginInConfig(cfg: OpenClawConfig, pluginId: string): Plu
       enabled: true,
     },
   };
-  let next: OpenClawConfig = {
+  let next: SecretClawConfig = {
     ...cfg,
     plugins: {
       ...cfg.plugins,

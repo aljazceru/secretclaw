@@ -10,9 +10,9 @@ const noopAsync = async () => {};
 const noop = () => {};
 const authProfilePathFor = (agentDir: string) => path.join(agentDir, "auth-profiles.json");
 const requireAgentDir = () => {
-  const agentDir = process.env.OPENCLAW_AGENT_DIR;
+  const agentDir = process.env.SECRETCLAW_AGENT_DIR;
   if (!agentDir) {
-    throw new Error("OPENCLAW_AGENT_DIR not set");
+    throw new Error("SECRETCLAW_AGENT_DIR not set");
   }
   return agentDir;
 };
@@ -40,8 +40,8 @@ const createRuntime = (): RuntimeEnv => ({
 });
 
 describe("applyAuthChoice", () => {
-  const previousStateDir = process.env.OPENCLAW_STATE_DIR;
-  const previousAgentDir = process.env.OPENCLAW_AGENT_DIR;
+  const previousStateDir = process.env.SECRETCLAW_STATE_DIR;
+  const previousAgentDir = process.env.SECRETCLAW_AGENT_DIR;
   const previousPiAgentDir = process.env.PI_CODING_AGENT_DIR;
   const previousMapleKey = process.env.MAPLE_API_KEY;
   const previousPrivatemodeKey = process.env.PRIVATEMODE_API_KEY;
@@ -54,14 +54,14 @@ describe("applyAuthChoice", () => {
       tempStateDir = null;
     }
     if (previousStateDir === undefined) {
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.SECRETCLAW_STATE_DIR;
     } else {
-      process.env.OPENCLAW_STATE_DIR = previousStateDir;
+      process.env.SECRETCLAW_STATE_DIR = previousStateDir;
     }
     if (previousAgentDir === undefined) {
-      delete process.env.OPENCLAW_AGENT_DIR;
+      delete process.env.SECRETCLAW_AGENT_DIR;
     } else {
-      process.env.OPENCLAW_AGENT_DIR = previousAgentDir;
+      process.env.SECRETCLAW_AGENT_DIR = previousAgentDir;
     }
     if (previousPiAgentDir === undefined) {
       delete process.env.PI_CODING_AGENT_DIR;
@@ -81,10 +81,10 @@ describe("applyAuthChoice", () => {
   });
 
   it("writes Maple credentials when selecting maple-api-key", async () => {
-    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-auth-"));
-    process.env.OPENCLAW_STATE_DIR = tempStateDir;
-    process.env.OPENCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
-    process.env.PI_CODING_AGENT_DIR = process.env.OPENCLAW_AGENT_DIR;
+    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-auth-"));
+    process.env.SECRETCLAW_STATE_DIR = tempStateDir;
+    process.env.SECRETCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
+    process.env.PI_CODING_AGENT_DIR = process.env.SECRETCLAW_AGENT_DIR;
 
     const prompter = createPrompter(["sk-maple-test", ""]);
     const runtime = createRuntime();
@@ -111,10 +111,10 @@ describe("applyAuthChoice", () => {
   });
 
   it("writes Privatemode credentials when selecting privatemode-api-key", async () => {
-    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-auth-"));
-    process.env.OPENCLAW_STATE_DIR = tempStateDir;
-    process.env.OPENCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
-    process.env.PI_CODING_AGENT_DIR = process.env.OPENCLAW_AGENT_DIR;
+    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-auth-"));
+    process.env.SECRETCLAW_STATE_DIR = tempStateDir;
+    process.env.SECRETCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
+    process.env.PI_CODING_AGENT_DIR = process.env.SECRETCLAW_AGENT_DIR;
 
     const prompter = createPrompter(["sk-privatemode-test", ""]);
     const runtime = createRuntime();

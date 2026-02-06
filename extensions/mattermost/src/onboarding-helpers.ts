@@ -1,12 +1,12 @@
-import type { OpenClawConfig, WizardPrompter } from "openclaw/plugin-sdk";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
+import type { SecretClawConfig, WizardPrompter } from "secretclaw/plugin-sdk";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "secretclaw/plugin-sdk";
 
 type PromptAccountIdParams = {
-  cfg: OpenClawConfig;
+  cfg: SecretClawConfig;
   prompter: WizardPrompter;
   label: string;
   currentId?: string;
-  listAccountIds: (cfg: OpenClawConfig) => string[];
+  listAccountIds: (cfg: SecretClawConfig) => string[];
   defaultAccountId: string;
 };
 

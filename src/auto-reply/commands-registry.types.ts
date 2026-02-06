@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/types.js";
+import type { SecretClawConfig } from "../config/types.js";
 
 export type CommandScope = "text" | "native" | "both";
 
@@ -14,7 +14,7 @@ export type CommandCategory =
 export type CommandArgType = "string" | "number" | "boolean";
 
 export type CommandArgChoiceContext = {
-  cfg?: OpenClawConfig;
+  cfg?: SecretClawConfig;
   provider?: string;
   model?: string;
   command: ChatCommandDefinition;
@@ -80,7 +80,7 @@ export type CommandDetection = {
 };
 
 export type ShouldHandleTextCommandsParams = {
-  cfg: OpenClawConfig;
+  cfg: SecretClawConfig;
   surface: string;
   commandSource?: "text" | "native";
 };

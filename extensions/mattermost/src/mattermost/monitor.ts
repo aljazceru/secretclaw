@@ -1,9 +1,9 @@
 import type {
   ChannelAccountSnapshot,
-  OpenClawConfig,
+  SecretClawConfig,
   ReplyPayload,
   RuntimeEnv,
-} from "openclaw/plugin-sdk";
+} from "secretclaw/plugin-sdk";
 import {
   createReplyPrefixContext,
   createTypingCallbacks,
@@ -16,7 +16,7 @@ import {
   resolveControlCommandGate,
   resolveChannelMediaMaxBytes,
   type HistoryEntry,
-} from "openclaw/plugin-sdk";
+} from "secretclaw/plugin-sdk";
 import WebSocket from "ws";
 import { getMattermostRuntime } from "../runtime.js";
 import { resolveMattermostAccount } from "./accounts.js";
@@ -43,7 +43,7 @@ export type MonitorMattermostOpts = {
   botToken?: string;
   baseUrl?: string;
   accountId?: string;
-  config?: OpenClawConfig;
+  config?: SecretClawConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   statusSink?: (patch: Partial<ChannelAccountSnapshot>) => void;

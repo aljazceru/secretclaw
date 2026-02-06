@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { SecretClawConfig } from "../../config/config.js";
 import { __testing, createImageTool, resolveImageModelConfigForTool } from "./image-tool.js";
 
 vi.mock("@mariozechner/pi-ai", () => ({
@@ -55,8 +55,8 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("stays disabled without auth when no pairing is possible", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
-    const cfg: OpenClawConfig = {
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-"));
+    const cfg: SecretClawConfig = {
       agents: { defaults: { model: { primary: "privatemode/llama-3.3-70b" } } },
     };
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toBeNull();
@@ -64,9 +64,9 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("pairs maple primary with a Maple vision model when auth exists", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-"));
     vi.stubEnv("MAPLE_API_KEY", "maple-test");
-    const cfg: OpenClawConfig = {
+    const cfg: SecretClawConfig = {
       agents: { defaults: { model: { primary: "maple/kimi-k2-5" } } },
     };
     expect(resolveImageModelConfigForTool({ cfg, agentDir })).toEqual({
@@ -76,14 +76,14 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("pairs a custom provider when it declares an image-capable model", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-"));
     await writeAuthProfiles(agentDir, {
       version: 1,
       profiles: {
         "acme:default": { type: "api_key", provider: "acme", key: "sk-test" },
       },
     });
-    const cfg: OpenClawConfig = {
+    const cfg: SecretClawConfig = {
       agents: { defaults: { model: { primary: "acme/text-1" } } },
       models: {
         providers: {
@@ -103,8 +103,8 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("prefers explicit agents.defaults.imageModel", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
-    const cfg: OpenClawConfig = {
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-"));
+    const cfg: SecretClawConfig = {
       agents: {
         defaults: {
           model: { primary: "privatemode/llama-3.3-70b" },
@@ -118,8 +118,8 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("keeps image tool available when primary model supports images (for explicit requests)", async () => {
-    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-"));
-    const cfg: OpenClawConfig = {
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-"));
+    const cfg: SecretClawConfig = {
       agents: {
         defaults: {
           model: { primary: "acme/vision-1" },
@@ -145,14 +145,14 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("sandboxes image paths like the read tool", async () => {
-    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-sandbox-"));
+    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-sandbox-"));
     const agentDir = path.join(stateDir, "agent");
     const sandboxRoot = path.join(stateDir, "sandbox");
     await fs.mkdir(agentDir, { recursive: true });
     await fs.mkdir(sandboxRoot, { recursive: true });
     await fs.writeFile(path.join(sandboxRoot, "img.png"), "fake", "utf8");
 
-    const cfg: OpenClawConfig = {
+    const cfg: SecretClawConfig = {
       agents: {
         defaults: {
           model: { primary: "privatemode/llama-3.3-70b" },
@@ -176,7 +176,7 @@ describe("image tool implicit imageModel config", () => {
   });
 
   it("rewrites inbound absolute paths into sandbox media/inbound", async () => {
-    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-image-sandbox-"));
+    const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-image-sandbox-"));
     const agentDir = path.join(stateDir, "agent");
     const sandboxRoot = path.join(stateDir, "sandbox");
     vi.stubEnv("MAPLE_API_KEY", "maple-test");
@@ -191,7 +191,7 @@ describe("image tool implicit imageModel config", () => {
       Buffer.from(pngB64, "base64"),
     );
 
-    const cfg: OpenClawConfig = {
+    const cfg: SecretClawConfig = {
       agents: {
         defaults: {
           model: { primary: "privatemode/llama-3.3-70b" },
@@ -207,7 +207,7 @@ describe("image tool implicit imageModel config", () => {
 
     const res = await tool.execute("t1", {
       prompt: "Describe the image.",
-      image: "@/Users/steipete/.openclaw/media/inbound/photo.png",
+      image: "@/Users/steipete/.secretclaw/media/inbound/photo.png",
     });
 
     expect((res.details as { rewrittenFrom?: string }).rewrittenFrom).toContain("photo.png");

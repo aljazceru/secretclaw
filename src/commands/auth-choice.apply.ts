@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import type { AuthChoice } from "./onboard-types.js";
@@ -6,7 +6,7 @@ import { applyAuthChoiceApiProviders } from "./auth-choice.apply.api-providers.j
 
 export type ApplyAuthChoiceParams = {
   authChoice: AuthChoice;
-  config: OpenClawConfig;
+  config: SecretClawConfig;
   prompter: WizardPrompter;
   runtime: RuntimeEnv;
   agentDir?: string;
@@ -19,7 +19,7 @@ export type ApplyAuthChoiceParams = {
 };
 
 export type ApplyAuthChoiceResult = {
-  config: OpenClawConfig;
+  config: SecretClawConfig;
   agentModelOverride?: string;
 };
 

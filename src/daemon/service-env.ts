@@ -148,26 +148,26 @@ export function buildServiceEnvironment(params: {
   launchdLabel?: string;
 }): Record<string, string | undefined> {
   const { env, port, token, launchdLabel } = params;
-  const profile = env.OPENCLAW_PROFILE;
+  const profile = env.SECRETCLAW_PROFILE ?? env.OPENCLAW_PROFILE;
   const resolvedLaunchdLabel =
     launchdLabel ||
     (process.platform === "darwin" ? resolveGatewayLaunchAgentLabel(profile) : undefined);
   const systemdUnit = `${resolveGatewaySystemdServiceName(profile)}.service`;
-  const stateDir = env.OPENCLAW_STATE_DIR;
-  const configPath = env.OPENCLAW_CONFIG_PATH;
+  const stateDir = env.SECRETCLAW_STATE_DIR ?? env.OPENCLAW_STATE_DIR;
+  const configPath = env.SECRETCLAW_CONFIG_PATH ?? env.OPENCLAW_CONFIG_PATH;
   return {
     HOME: env.HOME,
     PATH: buildMinimalServicePath({ env }),
-    OPENCLAW_PROFILE: profile,
-    OPENCLAW_STATE_DIR: stateDir,
-    OPENCLAW_CONFIG_PATH: configPath,
-    OPENCLAW_GATEWAY_PORT: String(port),
-    OPENCLAW_GATEWAY_TOKEN: token,
-    OPENCLAW_LAUNCHD_LABEL: resolvedLaunchdLabel,
-    OPENCLAW_SYSTEMD_UNIT: systemdUnit,
-    OPENCLAW_SERVICE_MARKER: GATEWAY_SERVICE_MARKER,
-    OPENCLAW_SERVICE_KIND: GATEWAY_SERVICE_KIND,
-    OPENCLAW_SERVICE_VERSION: VERSION,
+    SECRETCLAW_PROFILE: profile,
+    SECRETCLAW_STATE_DIR: stateDir,
+    SECRETCLAW_CONFIG_PATH: configPath,
+    SECRETCLAW_GATEWAY_PORT: String(port),
+    SECRETCLAW_GATEWAY_TOKEN: token,
+    SECRETCLAW_LAUNCHD_LABEL: resolvedLaunchdLabel,
+    SECRETCLAW_SYSTEMD_UNIT: systemdUnit,
+    SECRETCLAW_SERVICE_MARKER: GATEWAY_SERVICE_MARKER,
+    SECRETCLAW_SERVICE_KIND: GATEWAY_SERVICE_KIND,
+    SECRETCLAW_SERVICE_VERSION: VERSION,
   };
 }
 
@@ -175,20 +175,20 @@ export function buildNodeServiceEnvironment(params: {
   env: Record<string, string | undefined>;
 }): Record<string, string | undefined> {
   const { env } = params;
-  const stateDir = env.OPENCLAW_STATE_DIR;
-  const configPath = env.OPENCLAW_CONFIG_PATH;
+  const stateDir = env.SECRETCLAW_STATE_DIR ?? env.OPENCLAW_STATE_DIR;
+  const configPath = env.SECRETCLAW_CONFIG_PATH ?? env.OPENCLAW_CONFIG_PATH;
   return {
     HOME: env.HOME,
     PATH: buildMinimalServicePath({ env }),
-    OPENCLAW_STATE_DIR: stateDir,
-    OPENCLAW_CONFIG_PATH: configPath,
-    OPENCLAW_LAUNCHD_LABEL: resolveNodeLaunchAgentLabel(),
-    OPENCLAW_SYSTEMD_UNIT: resolveNodeSystemdServiceName(),
-    OPENCLAW_WINDOWS_TASK_NAME: resolveNodeWindowsTaskName(),
-    OPENCLAW_TASK_SCRIPT_NAME: NODE_WINDOWS_TASK_SCRIPT_NAME,
-    OPENCLAW_LOG_PREFIX: "node",
-    OPENCLAW_SERVICE_MARKER: NODE_SERVICE_MARKER,
-    OPENCLAW_SERVICE_KIND: NODE_SERVICE_KIND,
-    OPENCLAW_SERVICE_VERSION: VERSION,
+    SECRETCLAW_STATE_DIR: stateDir,
+    SECRETCLAW_CONFIG_PATH: configPath,
+    SECRETCLAW_LAUNCHD_LABEL: resolveNodeLaunchAgentLabel(),
+    SECRETCLAW_SYSTEMD_UNIT: resolveNodeSystemdServiceName(),
+    SECRETCLAW_WINDOWS_TASK_NAME: resolveNodeWindowsTaskName(),
+    SECRETCLAW_TASK_SCRIPT_NAME: NODE_WINDOWS_TASK_SCRIPT_NAME,
+    SECRETCLAW_LOG_PREFIX: "node",
+    SECRETCLAW_SERVICE_MARKER: NODE_SERVICE_MARKER,
+    SECRETCLAW_SERVICE_KIND: NODE_SERVICE_KIND,
+    SECRETCLAW_SERVICE_VERSION: VERSION,
   };
 }

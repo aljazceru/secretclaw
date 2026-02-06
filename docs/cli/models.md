@@ -1,12 +1,12 @@
 ---
-summary: "CLI reference for `openclaw models` (status/list/set/scan, aliases, fallbacks, auth)"
+summary: "CLI reference for `secretclaw models` (status/list/set/scan, aliases, fallbacks, auth)"
 read_when:
   - You want to change default models or view provider auth status
   - You want to scan available models/providers and debug auth profiles
 title: "models"
 ---
 
-# `openclaw models`
+# `secretclaw models`
 
 Model discovery, scanning, and configuration (default model, fallbacks, auth profiles).
 
@@ -18,26 +18,26 @@ Related:
 ## Common commands
 
 ```bash
-openclaw models status
-openclaw models list
-openclaw models set <model-or-alias>
-openclaw models scan
+secretclaw models status
+secretclaw models list
+secretclaw models set <model-or-alias>
+secretclaw models scan
 ```
 
-`openclaw models status` shows the resolved default/fallbacks plus an auth overview.
+`secretclaw models status` shows the resolved default/fallbacks plus an auth overview.
 When provider usage snapshots are available, the OAuth/token status section includes
 provider usage headers.
 Add `--probe` to run live auth probes against each configured provider profile.
 Probes are real requests (may consume tokens and trigger rate limits).
 Use `--agent <id>` to inspect a configured agent’s model/auth state. When omitted,
-the command uses `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR` if set, otherwise the
+the command uses `SECRETCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR` if set, otherwise the
 configured default agent.
 
 Notes:
 
 - `models set <model-or-alias>` accepts `provider/model` or an alias.
 - Model refs are parsed by splitting on the **first** `/`. If the model ID includes `/` (OpenRouter-style), include the provider prefix (example: `openrouter/moonshotai/kimi-k2`).
-- If you omit the provider, OpenClaw treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
+- If you omit the provider, SecretClaw treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
 
 ### `models status`
 
@@ -52,26 +52,26 @@ Options:
 - `--probe-timeout <ms>`
 - `--probe-concurrency <n>`
 - `--probe-max-tokens <n>`
-- `--agent <id>` (configured agent id; overrides `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
+- `--agent <id>` (configured agent id; overrides `SECRETCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`)
 
 ## Aliases + fallbacks
 
 ```bash
-openclaw models aliases list
-openclaw models fallbacks list
+secretclaw models aliases list
+secretclaw models fallbacks list
 ```
 
 ## Auth profiles
 
 ```bash
-openclaw models auth add
-openclaw models auth login --provider <id>
-openclaw models auth setup-token
-openclaw models auth paste-token
+secretclaw models auth add
+secretclaw models auth login --provider <id>
+secretclaw models auth setup-token
+secretclaw models auth paste-token
 ```
 
 `models auth login` runs a provider plugin’s auth flow (OAuth/API key). Use
-`openclaw plugins list` to see which providers are installed.
+`secretclaw plugins list` to see which providers are installed.
 
 Notes:
 

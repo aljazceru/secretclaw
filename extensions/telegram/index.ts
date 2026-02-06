@@ -1,5 +1,5 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+import type { SecretClawPluginApi } from "secretclaw/plugin-sdk";
+import { emptyPluginConfigSchema } from "secretclaw/plugin-sdk";
 import { telegramPlugin } from "./src/channel.js";
 import { setTelegramRuntime } from "./src/runtime.js";
 
@@ -8,7 +8,7 @@ const plugin = {
   name: "Telegram",
   description: "Telegram channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
+  register(api: SecretClawPluginApi) {
     setTelegramRuntime(api.runtime);
     api.registerChannel({ plugin: telegramPlugin });
   },

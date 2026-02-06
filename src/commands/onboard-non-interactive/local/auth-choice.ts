@@ -1,14 +1,14 @@
-import type { OpenClawConfig } from "../../../config/config.js";
+import type { SecretClawConfig } from "../../../config/config.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import type { AuthChoice, OnboardOptions } from "../../onboard-types.js";
 
 export async function applyNonInteractiveAuthChoice(params: {
-  nextConfig: OpenClawConfig;
+  nextConfig: SecretClawConfig;
   authChoice: AuthChoice;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: OpenClawConfig;
-}): Promise<OpenClawConfig | null> {
+  baseConfig: SecretClawConfig;
+}): Promise<SecretClawConfig | null> {
   const { authChoice, runtime } = params;
   let nextConfig = params.nextConfig;
 

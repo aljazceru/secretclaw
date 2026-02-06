@@ -1,5 +1,5 @@
 import type { Client } from "@larksuiteoapi/node-sdk";
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 import { dispatchReplyWithBufferedBlockDispatcher } from "../auto-reply/reply/provider-dispatcher.js";
 import { loadConfig } from "../config/config.js";
 import { logVerbose } from "../globals.js";
@@ -55,7 +55,7 @@ type FeishuEventPayload = {
 const SUPPORTED_MSG_TYPES = new Set(["text", "image", "file", "audio", "media", "sticker"]);
 
 export type ProcessFeishuMessageOptions = {
-  cfg?: OpenClawConfig;
+  cfg?: SecretClawConfig;
   accountId?: string;
   resolvedConfig?: ResolvedFeishuConfig;
   /** Feishu app credentials for streaming card API */
@@ -186,14 +186,14 @@ export async function processFeishuMessage(
                 senderId,
                 {
                   text: [
-                    "OpenClaw access not configured.",
+                    "SecretClaw access not configured.",
                     "",
                     `Your Feishu Open ID: ${senderId}`,
                     "",
                     `Pairing code: ${code}`,
                     "",
-                    "Ask the OpenClaw admin to approve with:",
-                    `openclaw pairing approve feishu ${code}`,
+                    "Ask the SecretClaw admin to approve with:",
+                    `secretclaw pairing approve feishu ${code}`,
                   ].join("\n"),
                 },
                 { receiveIdType: "open_id" },

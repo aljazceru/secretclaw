@@ -18,16 +18,16 @@ import {
 
 const authProfilePathFor = (agentDir: string) => path.join(agentDir, "auth-profiles.json");
 const requireAgentDir = () => {
-  const agentDir = process.env.OPENCLAW_AGENT_DIR;
+  const agentDir = process.env.SECRETCLAW_AGENT_DIR;
   if (!agentDir) {
-    throw new Error("OPENCLAW_AGENT_DIR not set");
+    throw new Error("SECRETCLAW_AGENT_DIR not set");
   }
   return agentDir;
 };
 
 describe("writeOAuthCredentials", () => {
-  const previousStateDir = process.env.OPENCLAW_STATE_DIR;
-  const previousAgentDir = process.env.OPENCLAW_AGENT_DIR;
+  const previousStateDir = process.env.SECRETCLAW_STATE_DIR;
+  const previousAgentDir = process.env.SECRETCLAW_AGENT_DIR;
   const previousPiAgentDir = process.env.PI_CODING_AGENT_DIR;
   let tempStateDir: string | null = null;
 
@@ -37,28 +37,28 @@ describe("writeOAuthCredentials", () => {
       tempStateDir = null;
     }
     if (previousStateDir === undefined) {
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.SECRETCLAW_STATE_DIR;
     } else {
-      process.env.OPENCLAW_STATE_DIR = previousStateDir;
+      process.env.SECRETCLAW_STATE_DIR = previousStateDir;
     }
     if (previousAgentDir === undefined) {
-      delete process.env.OPENCLAW_AGENT_DIR;
+      delete process.env.SECRETCLAW_AGENT_DIR;
     } else {
-      process.env.OPENCLAW_AGENT_DIR = previousAgentDir;
+      process.env.SECRETCLAW_AGENT_DIR = previousAgentDir;
     }
     if (previousPiAgentDir === undefined) {
       delete process.env.PI_CODING_AGENT_DIR;
     } else {
       process.env.PI_CODING_AGENT_DIR = previousPiAgentDir;
     }
-    delete process.env.OPENCLAW_OAUTH_DIR;
+    delete process.env.SECRETCLAW_OAUTH_DIR;
   });
 
-  it("writes auth-profiles.json under OPENCLAW_AGENT_DIR when set", async () => {
-    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-oauth-"));
-    process.env.OPENCLAW_STATE_DIR = tempStateDir;
-    process.env.OPENCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
-    process.env.PI_CODING_AGENT_DIR = process.env.OPENCLAW_AGENT_DIR;
+  it("writes auth-profiles.json under SECRETCLAW_AGENT_DIR when set", async () => {
+    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-oauth-"));
+    process.env.SECRETCLAW_STATE_DIR = tempStateDir;
+    process.env.SECRETCLAW_AGENT_DIR = path.join(tempStateDir, "agent");
+    process.env.PI_CODING_AGENT_DIR = process.env.SECRETCLAW_AGENT_DIR;
 
     const creds = {
       refresh: "refresh-token",
@@ -82,8 +82,8 @@ describe("writeOAuthCredentials", () => {
 });
 
 describe("setMapleApiKey", () => {
-  const previousStateDir = process.env.OPENCLAW_STATE_DIR;
-  const previousAgentDir = process.env.OPENCLAW_AGENT_DIR;
+  const previousStateDir = process.env.SECRETCLAW_STATE_DIR;
+  const previousAgentDir = process.env.SECRETCLAW_AGENT_DIR;
   const previousPiAgentDir = process.env.PI_CODING_AGENT_DIR;
   let tempStateDir: string | null = null;
 
@@ -93,14 +93,14 @@ describe("setMapleApiKey", () => {
       tempStateDir = null;
     }
     if (previousStateDir === undefined) {
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.SECRETCLAW_STATE_DIR;
     } else {
-      process.env.OPENCLAW_STATE_DIR = previousStateDir;
+      process.env.SECRETCLAW_STATE_DIR = previousStateDir;
     }
     if (previousAgentDir === undefined) {
-      delete process.env.OPENCLAW_AGENT_DIR;
+      delete process.env.SECRETCLAW_AGENT_DIR;
     } else {
-      process.env.OPENCLAW_AGENT_DIR = previousAgentDir;
+      process.env.SECRETCLAW_AGENT_DIR = previousAgentDir;
     }
     if (previousPiAgentDir === undefined) {
       delete process.env.PI_CODING_AGENT_DIR;
@@ -109,11 +109,11 @@ describe("setMapleApiKey", () => {
     }
   });
 
-  it("writes to OPENCLAW_AGENT_DIR when set", async () => {
-    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-maple-"));
-    process.env.OPENCLAW_STATE_DIR = tempStateDir;
-    process.env.OPENCLAW_AGENT_DIR = path.join(tempStateDir, "custom-agent");
-    process.env.PI_CODING_AGENT_DIR = process.env.OPENCLAW_AGENT_DIR;
+  it("writes to SECRETCLAW_AGENT_DIR when set", async () => {
+    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-maple-"));
+    process.env.SECRETCLAW_STATE_DIR = tempStateDir;
+    process.env.SECRETCLAW_AGENT_DIR = path.join(tempStateDir, "custom-agent");
+    process.env.PI_CODING_AGENT_DIR = process.env.SECRETCLAW_AGENT_DIR;
 
     await setMapleApiKey("sk-maple-test");
 
@@ -131,8 +131,8 @@ describe("setMapleApiKey", () => {
 });
 
 describe("setPrivatemodeApiKey", () => {
-  const previousStateDir = process.env.OPENCLAW_STATE_DIR;
-  const previousAgentDir = process.env.OPENCLAW_AGENT_DIR;
+  const previousStateDir = process.env.SECRETCLAW_STATE_DIR;
+  const previousAgentDir = process.env.SECRETCLAW_AGENT_DIR;
   const previousPiAgentDir = process.env.PI_CODING_AGENT_DIR;
   let tempStateDir: string | null = null;
 
@@ -142,14 +142,14 @@ describe("setPrivatemodeApiKey", () => {
       tempStateDir = null;
     }
     if (previousStateDir === undefined) {
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.SECRETCLAW_STATE_DIR;
     } else {
-      process.env.OPENCLAW_STATE_DIR = previousStateDir;
+      process.env.SECRETCLAW_STATE_DIR = previousStateDir;
     }
     if (previousAgentDir === undefined) {
-      delete process.env.OPENCLAW_AGENT_DIR;
+      delete process.env.SECRETCLAW_AGENT_DIR;
     } else {
-      process.env.OPENCLAW_AGENT_DIR = previousAgentDir;
+      process.env.SECRETCLAW_AGENT_DIR = previousAgentDir;
     }
     if (previousPiAgentDir === undefined) {
       delete process.env.PI_CODING_AGENT_DIR;
@@ -158,11 +158,11 @@ describe("setPrivatemodeApiKey", () => {
     }
   });
 
-  it("writes to OPENCLAW_AGENT_DIR when set", async () => {
-    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-privatemode-"));
-    process.env.OPENCLAW_STATE_DIR = tempStateDir;
-    process.env.OPENCLAW_AGENT_DIR = path.join(tempStateDir, "custom-agent");
-    process.env.PI_CODING_AGENT_DIR = process.env.OPENCLAW_AGENT_DIR;
+  it("writes to SECRETCLAW_AGENT_DIR when set", async () => {
+    tempStateDir = await fs.mkdtemp(path.join(os.tmpdir(), "secretclaw-privatemode-"));
+    process.env.SECRETCLAW_STATE_DIR = tempStateDir;
+    process.env.SECRETCLAW_AGENT_DIR = path.join(tempStateDir, "custom-agent");
+    process.env.PI_CODING_AGENT_DIR = process.env.SECRETCLAW_AGENT_DIR;
 
     await setPrivatemodeApiKey("sk-privatemode-test");
 

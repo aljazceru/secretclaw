@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 import {
   buildMapleModelDefinition,
   MAPLE_DEFAULT_BASE_URL,
@@ -31,9 +31,9 @@ function resolvePrivatemodeBaseUrl(): string {
  * Registers Maple models and sets up the provider, but preserves existing model selection.
  */
 export function applyMapleProviderConfig(
-  cfg: OpenClawConfig,
+  cfg: SecretClawConfig,
   params?: { baseUrl?: string },
-): OpenClawConfig {
+): SecretClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MAPLE_DEFAULT_MODEL_REF] = {
     ...models[MAPLE_DEFAULT_MODEL_REF],
@@ -84,9 +84,9 @@ export function applyMapleProviderConfig(
  * Use this when Maple is the primary provider choice during onboarding.
  */
 export function applyMapleConfig(
-  cfg: OpenClawConfig,
+  cfg: SecretClawConfig,
   params?: { baseUrl?: string },
-): OpenClawConfig {
+): SecretClawConfig {
   const next = applyMapleProviderConfig(cfg, params);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -113,9 +113,9 @@ export function applyMapleConfig(
  * Registers Privatemode models and sets up the provider, but preserves existing model selection.
  */
 export function applyPrivatemodeProviderConfig(
-  cfg: OpenClawConfig,
+  cfg: SecretClawConfig,
   params?: { baseUrl?: string },
-): OpenClawConfig {
+): SecretClawConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[PRIVATEMODE_DEFAULT_MODEL_REF] = {
     ...models[PRIVATEMODE_DEFAULT_MODEL_REF],
@@ -168,9 +168,9 @@ export function applyPrivatemodeProviderConfig(
  * Use this when Privatemode is the primary provider choice during onboarding.
  */
 export function applyPrivatemodeConfig(
-  cfg: OpenClawConfig,
+  cfg: SecretClawConfig,
   params?: { baseUrl?: string },
-): OpenClawConfig {
+): SecretClawConfig {
   const next = applyPrivatemodeProviderConfig(cfg, params);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -193,7 +193,7 @@ export function applyPrivatemodeConfig(
 }
 
 export function applyAuthProfileConfig(
-  cfg: OpenClawConfig,
+  cfg: SecretClawConfig,
   params: {
     profileId: string;
     provider: string;
@@ -201,7 +201,7 @@ export function applyAuthProfileConfig(
     email?: string;
     preferProfileFirst?: boolean;
   },
-): OpenClawConfig {
+): SecretClawConfig {
   const profiles = {
     ...cfg.auth?.profiles,
     [params.profileId]: {

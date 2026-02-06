@@ -1,10 +1,14 @@
-import type { ChannelMessageActionName, ChannelPlugin, OpenClawConfig } from "openclaw/plugin-sdk";
+import type {
+  ChannelMessageActionName,
+  ChannelPlugin,
+  SecretClawConfig,
+} from "secretclaw/plugin-sdk";
 import {
   buildChannelConfigSchema,
   DEFAULT_ACCOUNT_ID,
   MSTeamsConfigSchema,
   PAIRING_APPROVED_MESSAGE,
-} from "openclaw/plugin-sdk";
+} from "secretclaw/plugin-sdk";
 import { listMSTeamsDirectoryGroupsLive, listMSTeamsDirectoryPeersLive } from "./directory-live.js";
 import { msteamsOnboardingAdapter } from "./onboarding.js";
 import { msteamsOutbound } from "./outbound.js";
@@ -98,7 +102,7 @@ export const msteamsPlugin: ChannelPlugin<ResolvedMSTeamsAccount> = {
       },
     }),
     deleteAccount: ({ cfg }) => {
-      const next = { ...cfg } as OpenClawConfig;
+      const next = { ...cfg } as SecretClawConfig;
       const nextChannels = { ...cfg.channels };
       delete nextChannels.msteams;
       if (Object.keys(nextChannels).length > 0) {

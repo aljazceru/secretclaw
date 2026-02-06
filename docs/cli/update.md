@@ -1,29 +1,29 @@
 ---
-summary: "CLI reference for `openclaw update` (safe-ish source update + gateway auto-restart)"
+summary: "CLI reference for `secretclaw update` (safe-ish source update + gateway auto-restart)"
 read_when:
   - You want to update a source checkout safely
   - You need to understand `--update` shorthand behavior
 title: "update"
 ---
 
-# `openclaw update`
+# `secretclaw update`
 
-Safely update OpenClaw and switch between stable/beta/dev channels.
+Safely update SecretClaw and switch between stable/beta/dev channels.
 
 If you installed via **npm/pnpm** (global install, no git metadata), updates happen via the package manager flow in [Updating](/install/updating).
 
 ## Usage
 
 ```bash
-openclaw update
-openclaw update status
-openclaw update wizard
-openclaw update --channel beta
-openclaw update --channel dev
-openclaw update --tag beta
-openclaw update --no-restart
-openclaw update --json
-openclaw --update
+secretclaw update
+secretclaw update status
+secretclaw update wizard
+secretclaw update --channel beta
+secretclaw update --channel dev
+secretclaw update --tag beta
+secretclaw update --no-restart
+secretclaw update --json
+secretclaw --update
 ```
 
 ## Options
@@ -41,9 +41,9 @@ Note: downgrades require confirmation because older versions can break configura
 Show the active update channel + git tag/branch/SHA (for source checkouts), plus update availability.
 
 ```bash
-openclaw update status
-openclaw update status --json
-openclaw update status --timeout 10
+secretclaw update status
+secretclaw update status --json
+secretclaw update status --timeout 10
 ```
 
 Options:
@@ -59,10 +59,10 @@ offers to create one.
 
 ## What it does
 
-When you switch channels explicitly (`--channel ...`), OpenClaw also keeps the
+When you switch channels explicitly (`--channel ...`), SecretClaw also keeps the
 install method aligned:
 
-- `dev` → ensures a git checkout (default: `~/openclaw`, override with `OPENCLAW_GIT_DIR`),
+- `dev` → ensures a git checkout (default: `~/secretclaw`, override with `SECRETCLAW_GIT_DIR`),
   updates it, and installs the global CLI from that checkout.
 - `stable`/`beta` → installs from npm using the matching dist-tag.
 
@@ -83,16 +83,16 @@ High-level:
 5. Rebases onto the selected commit (dev only).
 6. Installs deps (pnpm preferred; npm fallback).
 7. Builds + builds the Control UI.
-8. Runs `openclaw doctor` as the final “safe update” check.
+8. Runs `secretclaw doctor` as the final “safe update” check.
 9. Syncs plugins to the active channel (dev uses bundled extensions; stable/beta uses npm) and updates npm-installed plugins.
 
 ## `--update` shorthand
 
-`openclaw --update` rewrites to `openclaw update` (useful for shells and launcher scripts).
+`secretclaw --update` rewrites to `secretclaw update` (useful for shells and launcher scripts).
 
 ## See also
 
-- `openclaw doctor` (offers to run update first on git checkouts)
+- `secretclaw doctor` (offers to run update first on git checkouts)
 - [Development channels](/install/development-channels)
 - [Updating](/install/updating)
 - [CLI reference](/cli)

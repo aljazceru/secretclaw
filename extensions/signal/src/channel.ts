@@ -21,7 +21,7 @@ import {
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
   type ResolvedSignalAccount,
-} from "openclaw/plugin-sdk";
+} from "secretclaw/plugin-sdk";
 import { getSignalRuntime } from "./runtime.js";
 
 const signalMessageActions: ChannelMessageActionAdapter = {

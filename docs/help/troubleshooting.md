@@ -13,22 +13,22 @@ title: "Troubleshooting"
 Run these in order:
 
 ```bash
-openclaw status
-openclaw status --all
-openclaw gateway probe
-openclaw logs --follow
-openclaw doctor
+secretclaw status
+secretclaw status --all
+secretclaw gateway probe
+secretclaw logs --follow
+secretclaw doctor
 ```
 
 If the gateway is reachable, deep probes:
 
 ```bash
-openclaw status --deep
+secretclaw status --deep
 ```
 
 ## Common “it broke” cases
 
-### `openclaw: command not found`
+### `secretclaw: command not found`
 
 Almost always a Node/npm PATH issue. Start here:
 
@@ -48,7 +48,7 @@ For beta installs:
 curl -fsSL https://openclaw.ai/install.sh | bash -s -- --beta --verbose
 ```
 
-You can also set `OPENCLAW_VERBOSE=1` instead of the flag.
+You can also set `SECRETCLAW_VERBOSE=1` instead of the flag.
 
 ### Gateway “unauthorized”, can’t connect, or keeps reconnecting
 
@@ -83,7 +83,7 @@ Disable Advanced Security or add `docs.openclaw.ai` to the allowlist, then retry
 This usually means `agents.defaults.models` is configured as an allowlist. When it’s non-empty,
 only those provider/model keys can be selected.
 
-- Check the allowlist: `openclaw config get agents.defaults.models`
+- Check the allowlist: `secretclaw config get agents.defaults.models`
 - Add the model you want (or clear the allowlist) and retry `/model`
 - Use `/models` to browse the allowed providers/models
 
@@ -92,7 +92,7 @@ only those provider/model keys can be selected.
 Paste a safe report:
 
 ```bash
-openclaw status --all
+secretclaw status --all
 ```
 
-If you can, include the relevant log tail from `openclaw logs --follow`.
+If you can, include the relevant log tail from `secretclaw logs --follow`.

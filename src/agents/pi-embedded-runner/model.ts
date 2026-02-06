@@ -1,8 +1,8 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
 import { isIP } from "node:net";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { SecretClawConfig } from "../../config/config.js";
 import type { ModelDefinitionConfig } from "../../config/types.js";
-import { resolveOpenClawAgentDir } from "../agent-paths.js";
+import { resolveSecretClawAgentDir } from "../agent-paths.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../defaults.js";
 import { normalizeModelCompat } from "../model-compat.js";
 import { normalizeProviderId } from "../model-selection.js";
@@ -37,7 +37,7 @@ export function buildInlineProviderModels(
   });
 }
 
-export function buildModelAliasLines(cfg?: OpenClawConfig) {
+export function buildModelAliasLines(cfg?: SecretClawConfig) {
   const models = cfg?.agents?.defaults?.models ?? {};
   const entries: Array<{ alias: string; model: string }> = [];
   for (const [keyRaw, entryRaw] of Object.entries(models)) {
@@ -60,14 +60,14 @@ export function resolveModel(
   provider: string,
   modelId: string,
   agentDir?: string,
-  cfg?: OpenClawConfig,
+  cfg?: SecretClawConfig,
 ): {
   model?: Model<Api>;
   error?: string;
   authStorage: AuthStorage;
   modelRegistry: ModelRegistry;
 } {
-  const resolvedAgentDir = agentDir ?? resolveOpenClawAgentDir();
+  const resolvedAgentDir = agentDir ?? resolveSecretClawAgentDir();
   const authStorage = discoverAuthStorage(resolvedAgentDir);
   const modelRegistry = discoverModels(authStorage, resolvedAgentDir);
   const model = modelRegistry.find(provider, modelId) as Model<Api> | null;
@@ -132,7 +132,7 @@ const DEFAULT_LOCAL_PROXY_HOSTS = new Set([
 ]);
 
 function resolveLocalProxyHosts(): Set<string> {
-  const extra = process.env.OPENCLAW_LOCAL_PROXY_HOSTS;
+  const extra = process.env.SECRETCLAW_LOCAL_PROXY_HOSTS;
   if (!extra?.trim()) {
     return DEFAULT_LOCAL_PROXY_HOSTS;
   }

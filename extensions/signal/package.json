@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/signal",
+  "name": "@secretclaw/signal",
   "version": "2026.2.2",
-  "description": "OpenClaw Signal channel plugin",
+  "description": "SecretClaw Signal channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "secretclaw": "workspace:*"
   },
-  "openclaw": {
+  "secretclaw": {
     "extensions": [
       "./index.ts"
     ]

@@ -1,4 +1,4 @@
-# fastlane setup (OpenClaw iOS)
+# fastlane setup (SecretClaw iOS)
 
 Install:
 

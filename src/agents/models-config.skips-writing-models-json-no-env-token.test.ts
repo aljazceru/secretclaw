@@ -1,14 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeBase(fn, { prefix: "openclaw-models-" });
+  return withTempHomeBase(fn, { prefix: "secretclaw-models-" });
 }
 
-const MODELS_CONFIG: OpenClawConfig = {
+const MODELS_CONFIG: SecretClawConfig = {
   models: {
     providers: {
       "custom-proxy": {
@@ -52,10 +52,10 @@ describe("models-config", () => {
 
       try {
         vi.resetModules();
-        const { ensureOpenClawModelsJson } = await import("./models-config.js");
+        const { ensureSecretClawModelsJson } = await import("./models-config.js");
 
         const agentDir = path.join(home, "agent-empty");
-        const result = await ensureOpenClawModelsJson(
+        const result = await ensureSecretClawModelsJson(
           {
             models: { providers: {} },
           },
@@ -86,12 +86,12 @@ describe("models-config", () => {
   it("writes models.json for configured providers", async () => {
     await withTempHome(async () => {
       vi.resetModules();
-      const { ensureOpenClawModelsJson } = await import("./models-config.js");
-      const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
+      const { ensureSecretClawModelsJson } = await import("./models-config.js");
+      const { resolveSecretClawAgentDir } = await import("./agent-paths.js");
 
-      await ensureOpenClawModelsJson(MODELS_CONFIG);
+      await ensureSecretClawModelsJson(MODELS_CONFIG);
 
-      const modelPath = path.join(resolveOpenClawAgentDir(), "models.json");
+      const modelPath = path.join(resolveSecretClawAgentDir(), "models.json");
       const raw = await fs.readFile(modelPath, "utf8");
       const parsed = JSON.parse(raw) as {
         providers: Record<string, { baseUrl?: string }>;
@@ -106,12 +106,12 @@ describe("models-config", () => {
       const prevKey = process.env.MAPLE_API_KEY;
       process.env.MAPLE_API_KEY = "sk-maple-test";
       try {
-        const { ensureOpenClawModelsJson } = await import("./models-config.js");
-        const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
+        const { ensureSecretClawModelsJson } = await import("./models-config.js");
+        const { resolveSecretClawAgentDir } = await import("./agent-paths.js");
 
-        await ensureOpenClawModelsJson({});
+        await ensureSecretClawModelsJson({});
 
-        const modelPath = path.join(resolveOpenClawAgentDir(), "models.json");
+        const modelPath = path.join(resolveSecretClawAgentDir(), "models.json");
         const raw = await fs.readFile(modelPath, "utf8");
         const parsed = JSON.parse(raw) as {
           providers: Record<
@@ -142,12 +142,12 @@ describe("models-config", () => {
       const prevKey = process.env.PRIVATEMODE_API_KEY;
       process.env.PRIVATEMODE_API_KEY = "sk-privatemode-test";
       try {
-        const { ensureOpenClawModelsJson } = await import("./models-config.js");
-        const { resolveOpenClawAgentDir } = await import("./agent-paths.js");
+        const { ensureSecretClawModelsJson } = await import("./models-config.js");
+        const { resolveSecretClawAgentDir } = await import("./agent-paths.js");
 
-        await ensureOpenClawModelsJson({});
+        await ensureSecretClawModelsJson({});
 
-        const modelPath = path.join(resolveOpenClawAgentDir(), "models.json");
+        const modelPath = path.join(resolveSecretClawAgentDir(), "models.json");
         const raw = await fs.readFile(modelPath, "utf8");
         const parsed = JSON.parse(raw) as {
           providers: Record<

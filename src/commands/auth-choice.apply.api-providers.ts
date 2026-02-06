@@ -39,7 +39,7 @@ function resolveProxyDefaultUrl(envVar: string, fallback: string): string {
 }
 
 function resolveLocalProxyHosts(): Set<string> {
-  const extra = process.env.OPENCLAW_LOCAL_PROXY_HOSTS;
+  const extra = process.env.SECRETCLAW_LOCAL_PROXY_HOSTS;
   if (!extra?.trim()) {
     return DEFAULT_LOCAL_PROXY_HOSTS;
   }

@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/feishu",
+  "name": "@secretclaw/feishu",
   "version": "2026.2.2",
-  "description": "OpenClaw Feishu channel plugin",
+  "description": "SecretClaw Feishu channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "secretclaw": "workspace:*"
   },
-  "openclaw": {
+  "secretclaw": {
     "extensions": [
       "./index.ts"
     ],
@@ -25,7 +25,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@openclaw/feishu",
+      "npmSpec": "@secretclaw/feishu",
       "localPath": "extensions/feishu",
       "defaultChoice": "npm"
     }

@@ -4,7 +4,7 @@ import type {
   OnboardOptions,
   ResetScope,
 } from "../commands/onboard-types.js";
-import type { OpenClawConfig } from "../config/config.js";
+import type { SecretClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { QuickstartGatewayDefaults, WizardFlow } from "./onboarding.types.js";
 import { ensureAuthProfileStore } from "../agents/auth-profiles.js";
@@ -55,11 +55,11 @@ async function requireRiskAcknowledgement(params: {
     [
       "Security warning — please read.",
       "",
-      "OpenClaw is a hobby project and still in beta. Expect sharp edges.",
+      "SecretClaw is a hobby project and still in beta. Expect sharp edges.",
       "This bot can read files and run actions if tools are enabled.",
       "A bad prompt can trick it into doing unsafe things.",
       "",
-      "If you’re not comfortable with basic security and access control, don’t run OpenClaw.",
+      "If you’re not comfortable with basic security and access control, don’t run SecretClaw.",
       "Ask someone experienced to help before enabling tools or exposing it to the internet.",
       "",
       "Recommended baseline:",
@@ -69,8 +69,8 @@ async function requireRiskAcknowledgement(params: {
       "- Use the strongest available model for any bot with tools or untrusted inboxes.",
       "",
       "Run regularly:",
-      "openclaw security audit --deep",
-      "openclaw security audit --fix",
+      "secretclaw security audit --deep",
+      "secretclaw security audit --fix",
       "",
       "Must read: https://docs.openclaw.ai/gateway/security",
     ].join("\n"),
@@ -92,11 +92,11 @@ export async function runOnboardingWizard(
   prompter: WizardPrompter,
 ) {
   printWizardHeader(runtime);
-  await prompter.intro("OpenClaw onboarding");
+  await prompter.intro("SecretClaw onboarding");
   await requireRiskAcknowledgement({ opts, prompter });
 
   const snapshot = await readConfigFileSnapshot();
-  let baseConfig: OpenClawConfig = snapshot.valid ? snapshot.config : {};
+  let baseConfig: SecretClawConfig = snapshot.valid ? snapshot.config : {};
 
   if (snapshot.exists && !snapshot.valid) {
     await prompter.note(summarizeExistingConfig(baseConfig), "Invalid config");
@@ -111,13 +111,13 @@ export async function runOnboardingWizard(
       );
     }
     await prompter.outro(
-      `Config invalid. Run \`${formatCliCommand("openclaw doctor")}\` to repair it, then re-run onboarding.`,
+      `Config invalid. Run \`${formatCliCommand("secretclaw doctor")}\` to repair it, then re-run onboarding.`,
     );
     runtime.exit(1);
     return;
   }
 
-  const quickstartHint = `Configure details later via ${formatCliCommand("openclaw configure")}.`;
+  const quickstartHint = `Configure details later via ${formatCliCommand("secretclaw configure")}.`;
   const manualHint = "Configure port, network, Tailscale, and auth options.";
   const explicitFlowRaw = opts.flow?.trim();
   const normalizedExplicitFlow = explicitFlowRaw === "manual" ? "advanced" : explicitFlowRaw;
@@ -294,8 +294,8 @@ export async function runOnboardingWizard(
   const localUrl = `ws://127.0.0.1:${localPort}`;
   const localProbe = await probeGatewayReachable({
     url: localUrl,
-    token: baseConfig.gateway?.auth?.token ?? process.env.OPENCLAW_GATEWAY_TOKEN,
-    password: baseConfig.gateway?.auth?.password ?? process.env.OPENCLAW_GATEWAY_PASSWORD,
+    token: baseConfig.gateway?.auth?.token ?? process.env.SECRETCLAW_GATEWAY_TOKEN,
+    password: baseConfig.gateway?.auth?.password ?? process.env.SECRETCLAW_GATEWAY_PASSWORD,
   });
   const remoteUrl = baseConfig.gateway?.remote?.url?.trim() ?? "";
   const remoteProbe = remoteUrl
@@ -351,7 +351,7 @@ export async function runOnboardingWizard(
 
   const workspaceDir = resolveUserPath(workspaceInput.trim() || DEFAULT_WORKSPACE);
 
-  let nextConfig: OpenClawConfig = {
+  let nextConfig: SecretClawConfig = {
     ...baseConfig,
     agents: {
       ...baseConfig.agents,

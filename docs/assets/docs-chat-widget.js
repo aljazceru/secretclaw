@@ -4,7 +4,7 @@
   // Determine if we're on the docs site or embedded elsewhere
   const hostname = window.location.hostname;
   const isDocsSite = hostname === "localhost" || hostname === "127.0.0.1" ||
-    hostname.includes("docs.openclaw") || hostname.endsWith(".mintlify.app");
+    hostname.includes("docs.secretclaw") || hostname.endsWith(".mintlify.app");
   const assetsBase = isDocsSite ? "" : "https://docs.openclaw.ai";
   const apiBase = "https://claw-api.openknot.ai/api";
 
@@ -382,7 +382,7 @@ html[data-theme="dark"] .docs-chat-user {
   button.id = "docs-chat-button";
   button.type = "button";
   button.innerHTML =
-    `<img class="docs-chat-logo" src="${assetsBase}/assets/pixel-lobster.svg" alt="OpenClaw">` +
+    `<img class="docs-chat-logo" src="${assetsBase}/assets/pixel-lobster.svg" alt="SecretClaw">` +
     `<span>Ask Molty</span>`;
 
   const panel = document.createElement("div");
@@ -397,8 +397,8 @@ html[data-theme="dark"] .docs-chat-user {
   header.id = "docs-chat-header";
   header.innerHTML =
     `<div id="docs-chat-header-title">` +
-    `<img class="docs-chat-logo" src="${assetsBase}/assets/pixel-lobster.svg" alt="OpenClaw">` +
-    `<span>OpenClaw Docs</span>` +
+    `<img class="docs-chat-logo" src="${assetsBase}/assets/pixel-lobster.svg" alt="SecretClaw">` +
+    `<span>SecretClaw Docs</span>` +
     `</div>` +
     `<div id="docs-chat-header-actions"></div>`;
   const headerActions = header.querySelector("#docs-chat-header-actions");
@@ -428,7 +428,7 @@ html[data-theme="dark"] .docs-chat-user {
   inputWrap.id = "docs-chat-input";
   const textarea = document.createElement("textarea");
   textarea.rows = 1;
-  textarea.placeholder = "Ask about OpenClaw Docs...";
+  textarea.placeholder = "Ask about SecretClaw Docs...";
 
   // Auto-expand textarea as user types (up to max-height set in CSS)
   const autoExpand = () => {

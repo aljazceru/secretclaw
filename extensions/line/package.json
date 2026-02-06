@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/line",
+  "name": "@secretclaw/line",
   "version": "2026.2.2",
-  "description": "OpenClaw LINE channel plugin",
+  "description": "SecretClaw LINE channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "secretclaw": "workspace:*"
   },
-  "openclaw": {
+  "secretclaw": {
     "extensions": [
       "./index.ts"
     ],
@@ -21,7 +21,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@openclaw/line",
+      "npmSpec": "@secretclaw/line",
       "localPath": "extensions/line",
       "defaultChoice": "npm"
     }

@@ -15,9 +15,9 @@ import {
   type ChannelDock,
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
-  type OpenClawConfig,
-} from "openclaw/plugin-sdk";
-import { GoogleChatConfigSchema } from "openclaw/plugin-sdk";
+  type SecretClawConfig,
+} from "secretclaw/plugin-sdk";
+import { GoogleChatConfigSchema } from "secretclaw/plugin-sdk";
 import {
   listGoogleChatAccountIds,
   resolveDefaultGoogleChatAccountId,
@@ -347,7 +347,7 @@ export const googlechatPlugin: ChannelPlugin<ResolvedGoogleChatAccount> = {
               ...configPatch,
             },
           },
-        } as OpenClawConfig;
+        } as SecretClawConfig;
       }
       return {
         ...next,
@@ -366,7 +366,7 @@ export const googlechatPlugin: ChannelPlugin<ResolvedGoogleChatAccount> = {
             },
           },
         },
-      } as OpenClawConfig;
+      } as SecretClawConfig;
     },
   },
   outbound: {

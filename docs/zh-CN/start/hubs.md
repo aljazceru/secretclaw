@@ -1,7 +1,7 @@
 ---
 read_when:
   - 你想要文档的完整地图
-summary: 链接到每个 OpenClaw 文档的中心页
+summary: 链接到每个 SecretClaw 文档的中心页
 title: 文档中心
 x-i18n:
   generated_at: "2026-02-03T10:10:07Z"
@@ -27,7 +27,7 @@ x-i18n:
 - [帮助](/help)
 - [配置](/gateway/configuration)
 - [配置示例](/gateway/configuration-examples)
-- [OpenClaw 助手](/start/openclaw)
+- [SecretClaw 助手](/start/secretclaw)
 - [展示案例](/start/showcase)
 - [传说](/start/lore)
 

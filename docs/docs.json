@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "OpenClaw",
+  "name": "SecretClaw",
   "theme": "mint",
   "logo": {
     "light": "/assets/pixel-lobster.svg",
@@ -17,11 +17,11 @@
     },
     {
       "name": "GitHub",
-      "url": "https://github.com/openclaw/openclaw"
+      "url": "https://github.com/secretclaw/secretclaw"
     },
     {
       "name": "Releases",
-      "url": "https://github.com/openclaw/openclaw/releases"
+      "url": "https://github.com/secretclaw/secretclaw/releases"
     }
   ],
   "redirects": [
@@ -243,15 +243,15 @@
     },
     {
       "source": "/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/secretclaw"
     },
     {
       "source": "/start/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/secretclaw"
     },
     {
       "source": "/start/clawd/",
-      "destination": "/start/openclaw"
+      "destination": "/start/secretclaw"
     },
     {
       "source": "/clawhub",
@@ -740,7 +740,7 @@
                   "start/setup",
                   "start/onboarding",
                   "start/pairing",
-                  "start/openclaw",
+                  "start/secretclaw",
                   "start/hubs"
                 ]
               },
@@ -1168,7 +1168,7 @@
                   "zh-CN/start/setup",
                   "zh-CN/start/onboarding",
                   "zh-CN/start/pairing",
-                  "zh-CN/start/openclaw",
+                  "zh-CN/start/secretclaw",
                   "zh-CN/start/hubs"
                 ]
               },

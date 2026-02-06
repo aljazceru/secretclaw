@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/google-antigravity-auth",
+  "name": "@secretclaw/google-antigravity-auth",
   "version": "2026.2.2",
-  "description": "OpenClaw Google Antigravity OAuth provider plugin",
+  "description": "SecretClaw Google Antigravity OAuth provider plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "secretclaw": "workspace:*"
   },
-  "openclaw": {
+  "secretclaw": {
     "extensions": [
       "./index.ts"
     ]

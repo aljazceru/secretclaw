@@ -81,43 +81,43 @@ vi.mock("./progress.js", () => ({
 
 describe("daemon-cli coverage", () => {
   const originalEnv = {
-    OPENCLAW_STATE_DIR: process.env.OPENCLAW_STATE_DIR,
-    OPENCLAW_CONFIG_PATH: process.env.OPENCLAW_CONFIG_PATH,
-    OPENCLAW_GATEWAY_PORT: process.env.OPENCLAW_GATEWAY_PORT,
-    OPENCLAW_PROFILE: process.env.OPENCLAW_PROFILE,
+    SECRETCLAW_STATE_DIR: process.env.SECRETCLAW_STATE_DIR,
+    SECRETCLAW_CONFIG_PATH: process.env.SECRETCLAW_CONFIG_PATH,
+    SECRETCLAW_GATEWAY_PORT: process.env.SECRETCLAW_GATEWAY_PORT,
+    SECRETCLAW_PROFILE: process.env.SECRETCLAW_PROFILE,
   };
 
   beforeEach(() => {
-    process.env.OPENCLAW_STATE_DIR = "/tmp/openclaw-cli-state";
-    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli-state/openclaw.json";
-    delete process.env.OPENCLAW_GATEWAY_PORT;
-    delete process.env.OPENCLAW_PROFILE;
+    process.env.SECRETCLAW_STATE_DIR = "/tmp/secretclaw-cli-state";
+    process.env.SECRETCLAW_CONFIG_PATH = "/tmp/secretclaw-cli-state/secretclaw.json";
+    delete process.env.SECRETCLAW_GATEWAY_PORT;
+    delete process.env.SECRETCLAW_PROFILE;
     serviceReadCommand.mockResolvedValue(null);
   });
 
   afterEach(() => {
-    if (originalEnv.OPENCLAW_STATE_DIR !== undefined) {
-      process.env.OPENCLAW_STATE_DIR = originalEnv.OPENCLAW_STATE_DIR;
+    if (originalEnv.SECRETCLAW_STATE_DIR !== undefined) {
+      process.env.SECRETCLAW_STATE_DIR = originalEnv.SECRETCLAW_STATE_DIR;
     } else {
-      delete process.env.OPENCLAW_STATE_DIR;
+      delete process.env.SECRETCLAW_STATE_DIR;
     }
 
-    if (originalEnv.OPENCLAW_CONFIG_PATH !== undefined) {
-      process.env.OPENCLAW_CONFIG_PATH = originalEnv.OPENCLAW_CONFIG_PATH;
+    if (originalEnv.SECRETCLAW_CONFIG_PATH !== undefined) {
+      process.env.SECRETCLAW_CONFIG_PATH = originalEnv.SECRETCLAW_CONFIG_PATH;
     } else {
-      delete process.env.OPENCLAW_CONFIG_PATH;
+      delete process.env.SECRETCLAW_CONFIG_PATH;
     }
 
-    if (originalEnv.OPENCLAW_GATEWAY_PORT !== undefined) {
-      process.env.OPENCLAW_GATEWAY_PORT = originalEnv.OPENCLAW_GATEWAY_PORT;
+    if (originalEnv.SECRETCLAW_GATEWAY_PORT !== undefined) {
+      process.env.SECRETCLAW_GATEWAY_PORT = originalEnv.SECRETCLAW_GATEWAY_PORT;
     } else {
-      delete process.env.OPENCLAW_GATEWAY_PORT;
+      delete process.env.SECRETCLAW_GATEWAY_PORT;
     }
 
-    if (originalEnv.OPENCLAW_PROFILE !== undefined) {
-      process.env.OPENCLAW_PROFILE = originalEnv.OPENCLAW_PROFILE;
+    if (originalEnv.SECRETCLAW_PROFILE !== undefined) {
+      process.env.SECRETCLAW_PROFILE = originalEnv.SECRETCLAW_PROFILE;
     } else {
-      delete process.env.OPENCLAW_PROFILE;
+      delete process.env.SECRETCLAW_PROFILE;
     }
   });
 
@@ -148,10 +148,10 @@ describe("daemon-cli coverage", () => {
     serviceReadCommand.mockResolvedValueOnce({
       programArguments: ["/bin/node", "cli", "gateway", "--port", "19001"],
       environment: {
-        OPENCLAW_PROFILE: "dev",
-        OPENCLAW_STATE_DIR: "/tmp/openclaw-daemon-state",
-        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon-state/openclaw.json",
-        OPENCLAW_GATEWAY_PORT: "19001",
+        SECRETCLAW_PROFILE: "dev",
+        SECRETCLAW_STATE_DIR: "/tmp/secretclaw-daemon-state",
+        SECRETCLAW_CONFIG_PATH: "/tmp/secretclaw-daemon-state/secretclaw.json",
+        SECRETCLAW_GATEWAY_PORT: "19001",
       },
       sourcePath: "/tmp/bot.molt.gateway.plist",
     });

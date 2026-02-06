@@ -3,7 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runCommandWithTimeout } from "../process/exec.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
-import { resolveOpenClawPackageRoot, resolveOpenClawPackageRootSync } from "./openclaw-root.js";
+import {
+  resolveSecretClawPackageRoot,
+  resolveSecretClawPackageRootSync,
+} from "./secretclaw-root.js";
 
 export function resolveControlUiRepoRoot(
   argv1: string | undefined = process.argv[1],
@@ -53,7 +56,7 @@ export async function resolveControlUiDistIndexPath(
     return path.join(distDir, "control-ui", "index.html");
   }
 
-  const packageRoot = await resolveOpenClawPackageRoot({ argv1: normalized });
+  const packageRoot = await resolveSecretClawPackageRoot({ argv1: normalized });
   if (!packageRoot) {
     return null;
   }
@@ -105,7 +108,7 @@ export function resolveControlUiRootSync(opts: ControlUiRootResolveOptions = {})
       return null;
     }
   })();
-  const packageRoot = resolveOpenClawPackageRootSync({
+  const packageRoot = resolveSecretClawPackageRootSync({
     argv1,
     moduleUrl: opts.moduleUrl,
     cwd,
@@ -122,7 +125,7 @@ export function resolveControlUiRootSync(opts: ControlUiRootResolveOptions = {})
     addCandidate(candidates, path.join(moduleDir, "../../dist/control-ui"));
   }
   if (argv1Dir) {
-    // openclaw.mjs or dist/<bundle>.js
+    // secretclaw.mjs or dist/<bundle>.js
     addCandidate(candidates, path.join(argv1Dir, "dist", "control-ui"));
     addCandidate(candidates, path.join(argv1Dir, "control-ui"));
   }

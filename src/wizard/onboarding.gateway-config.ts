@@ -1,5 +1,5 @@
 import type { GatewayAuthChoice } from "../commands/onboard-types.js";
-import type { GatewayBindMode, GatewayTailscaleMode, OpenClawConfig } from "../config/config.js";
+import type { GatewayBindMode, GatewayTailscaleMode, SecretClawConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type {
   GatewayWizardSettings,
@@ -12,8 +12,8 @@ import { findTailscaleBinary } from "../infra/tailscale.js";
 
 type ConfigureGatewayOptions = {
   flow: WizardFlow;
-  baseConfig: OpenClawConfig;
-  nextConfig: OpenClawConfig;
+  baseConfig: SecretClawConfig;
+  nextConfig: SecretClawConfig;
   localPort: number;
   quickstartGateway: QuickstartGatewayDefaults;
   prompter: WizardPrompter;
@@ -21,7 +21,7 @@ type ConfigureGatewayOptions = {
 };
 
 type ConfigureGatewayResult = {
-  nextConfig: OpenClawConfig;
+  nextConfig: SecretClawConfig;
   settings: GatewayWizardSettings;
 };
 

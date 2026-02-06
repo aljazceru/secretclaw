@@ -4,15 +4,15 @@ import type { BrowserServerState } from "./server-context.js";
 vi.mock("./chrome.js", () => ({
   isChromeCdpReady: vi.fn(async () => true),
   isChromeReachable: vi.fn(async () => true),
-  launchOpenClawChrome: vi.fn(async () => {
+  launchSecretClawChrome: vi.fn(async () => {
     throw new Error("unexpected launch");
   }),
-  resolveOpenClawUserDataDir: vi.fn(() => "/tmp/openclaw"),
-  stopOpenClawChrome: vi.fn(async () => {}),
+  resolveSecretClawUserDataDir: vi.fn(() => "/tmp/secretclaw"),
+  stopSecretClawChrome: vi.fn(async () => {}),
 }));
 
 function makeState(
-  profile: "remote" | "openclaw",
+  profile: "remote" | "secretclaw",
 ): BrowserServerState & { profiles: Map<string, { lastTargetId?: string | null }> } {
   return {
     // oxlint-disable-next-line typescript/no-explicit-any
@@ -37,7 +37,7 @@ function makeState(
           cdpPort: 443,
           color: "#00AA00",
         },
-        openclaw: { cdpPort: 18800, color: "#FF4500" },
+        secretclaw: { cdpPort: 18800, color: "#FF4500" },
       },
     },
     profiles: new Map(),
@@ -277,12 +277,12 @@ describe("browser server-context tab selection state", () => {
     global.fetch = fetchMock;
 
     const { createBrowserRouteContext } = await import("./server-context.js");
-    const state = makeState("openclaw");
+    const state = makeState("secretclaw");
     const ctx = createBrowserRouteContext({ getState: () => state });
-    const openclaw = ctx.forProfile("openclaw");
+    const secretclaw = ctx.forProfile("secretclaw");
 
-    const opened = await openclaw.openTab("https://created.example");
+    const opened = await secretclaw.openTab("https://created.example");
     expect(opened.targetId).toBe("CREATED");
-    expect(state.profiles.get("openclaw")?.lastTargetId).toBe("CREATED");
+    expect(state.profiles.get("secretclaw")?.lastTargetId).toBe("CREATED");
   });
 });
